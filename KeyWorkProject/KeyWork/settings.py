@@ -39,7 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # Para APIs REST
     'CollectionPoint', # Nuestra app principal
-    
+    "cv_processing",    # App para procesamiento de CVs
+    'Notifications',   # App para notificaciones
+    "JobSeekerPortal", # App para el portal de quien busca empleo
+    "EmployerPortal",  # App para el portal de empleadores
+    "UserManagement",  # App para la gestión de usuarios
 ]
 
 MIDDLEWARE = [
