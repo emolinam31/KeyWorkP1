@@ -7,7 +7,8 @@ from PIL import Image
 import os
 from django.conf import settings
 
-pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def index(request):
     return HttpResponse("¡Bienvenido a KeyWork! 🚀")
@@ -60,11 +61,10 @@ def cv_detail(request, pk):
     """Vista para mostrar los detalles del CV y el texto extraído si es una imagen"""
     cv = get_object_or_404(CV, pk=pk)
     
-    return render(request, 'CollectionPoint/cv_detail.html', {
+    return render(request, 'cv_detail.html', {
         'cv': cv
     })
 
-# En CollectionPoint/views.py
 # En CollectionPoint/views.py
 def process_ocr(request, pk):
     """Procesar o reprocesar una imagen existente con OCR"""
@@ -75,33 +75,12 @@ def process_ocr(request, pk):
         return redirect('cv_detail', pk=cv.pk)
     
     try:
-        # Intenta importar pytesseract
-        import pytesseract
-        from PIL import Image
-        
-        # Intentamos encontrar tesseract en varias rutas comunes
-        possible_paths = [
-            '/usr/local/bin/tesseract',
-            '/opt/homebrew/bin/tesseract',
-            '/usr/bin/tesseract'
-        ]
-        
-        tesseract_found = False
-        for path in possible_paths:
-            try:
-                if os.path.exists(path):
-                    pytesseract.pytesseract.tesseract_cmd = path
-                    tesseract_found = True
-                    break
-            except:
-                continue
-        
-        if not tesseract_found:
-            raise Exception("Tesseract not found in common locations")
+        # Configura la ruta de Tesseract para Windows
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
         
         # Procesar la imagen con OCR
         img = Image.open(cv.file.path)
-        extracted_text = pytesseract.image_to_string(img)
+        extracted_text = pytesseract.image_to_string(img, lang='spa+eng')  # Español + inglés
         
         # Guardar el texto extraído
         cv.extracted_text = extracted_text
@@ -109,8 +88,9 @@ def process_ocr(request, pk):
         
         messages.success(request, 'Text extraction completed successfully!')
     except Exception as e:
-        # Proporcionar un mensaje de error más amigable
-        error_msg = f"Could not process OCR: {str(e)}. Please make sure Tesseract OCR is installed."
+        # Proporcionar un mensaje de error más informativo
+        error_msg = f"OCR processing failed: {str(e)}"
+        print(error_msg)  # Para el registro de errores en la consola
         cv.extracted_text = "OCR processing failed. You may need to install Tesseract OCR."
         cv.save()
         messages.error(request, error_msg)
