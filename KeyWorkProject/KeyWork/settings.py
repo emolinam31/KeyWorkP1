@@ -128,3 +128,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Media files (uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
+TESSERACT_CMD = '/usr/bin/tesseract'
+TESSERACT_CMD = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+TESSERACT_CMD = '/usr/local/bin/tesseract'  # macOS
