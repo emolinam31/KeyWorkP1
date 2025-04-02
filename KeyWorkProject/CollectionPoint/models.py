@@ -15,3 +15,5 @@ class CV(models.Model):
     
     def __str__(self):
         return f"{self.get_upload_type_display()} - {self.uploaded_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    
