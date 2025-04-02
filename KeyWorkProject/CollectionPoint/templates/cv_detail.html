@@ -69,6 +69,19 @@
     .alert-warning {
         background-color: rgba(255, 193, 7, 0.2);
     }
+    .pdf-container {
+        width: 100%;
+        height: 600px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    .pdf-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -107,7 +120,6 @@
                         <h4>Extracted Text (OCR)</h4>
                         {% if cv.extracted_text %}
                             <div class="extracted-text">{{ cv.extracted_text }}</div>
-                            
                         {% else %}
                             <div class="alert alert-warning">
                                 No text has been extracted from this image.
@@ -124,11 +136,24 @@
                         {% endif %}
                     </div>
                 </div>
-            {% else %}
-                <div class="text-center">
-                    <a href="{{ cv.file.url }}" class="btn btn-primary" target="_blank">
-                        <i class="fas fa-download"></i> Download File
-                    </a>
+            {% elif cv.upload_type == 'document' %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>PDF File</h4>
+                        <div class="pdf-container">
+                            <iframe src="{{ cv.file.url }}" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Extracted Text</h4>
+                        {% if cv.extracted_text %}
+                            <div class="extracted-text">{{ cv.extracted_text }}</div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                No text has been extracted from this PDF.
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
 
