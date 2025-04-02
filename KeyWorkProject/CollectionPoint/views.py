@@ -2,6 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from .models import CV
 import pytesseract
 from PIL import Image
@@ -38,11 +39,36 @@ def extract_text_from_pdf(pdf_path):
         print(f"PDF Processing Error: {e}")
         return "Error extracting text from PDF."
 
+@login_required
 def upload_cv(request):
     """Sube un CV, lo almacena y extrae texto si es PDF o imagen."""
-    if request.method == 'POST' and request.FILES.get('file'):
+    if request.method == 'POST':
+        # Si se envió un botón desde la página home, mostrar formulario de subida
+        if not request.FILES:
+            upload_type = request.POST.get('upload_type', 'document')
+            if upload_type == 'document':
+                accept = '.pdf'
+                title = 'Subir CV como documento PDF'
+            elif upload_type == 'image':
+                accept = '.jpg,.jpeg,.png'
+                title = 'Subir CV como imagen'
+            else:
+                accept = '.mp3,.wav'
+                title = 'Subir grabación de voz (Próximamente)'
+                
+            return render(request, 'upload_cv.html', {
+                'upload_type': upload_type,
+                'accept': accept,
+                'title': title
+            })
+        
+        # Procesar el archivo subido
         upload_type = request.POST.get('upload_type', 'document')
-        uploaded_file = request.FILES['file']
+        uploaded_file = request.FILES.get('file')
+        
+        if not uploaded_file:
+            messages.error(request, 'No se ha seleccionado ningún archivo.')
+            return redirect('home')
 
         # Guardar en el modelo
         cv = CV(
@@ -74,10 +100,87 @@ def upload_cv(request):
                 print(f"OCR Error: {e}")
                 messages.warning(request, 'CV uploaded but text extraction failed.')
 
+        # Si el usuario es un JobSeeker, asociar el CV con su perfil
+        if request.user.is_authenticated:
+            try:
+                profile = request.user.profile
+                if profile.user_type == 'jobseeker':
+                    # Asociar CV con el perfil
+                    profile.cv = cv
+                    
+                    # Intentar extraer información básica del texto si existe
+                    if extracted_text:
+                        # Esta es una implementación básica. Aquí es donde integrarías tu modelo de IA
+                        # para extraer información más precisa
+                        extract_and_update_profile_data(profile, extracted_text)
+                    
+                    profile.save()
+                    messages.success(request, 'CV uploaded and associated with your profile!')
+            except Exception as e:
+                print(f"Profile association error: {e}")
+                messages.warning(request, 'CV uploaded but profile association failed.')
+
         messages.success(request, 'CV uploaded successfully!')
         return redirect('cv_detail', pk=cv.pk)
 
+    # Si es GET, redirigir a la página principal
     return redirect('home')
+
+def extract_and_update_profile_data(profile, text):
+    """
+    Extrae información del texto del CV y actualiza el perfil del usuario.
+    Esta es una implementación muy básica. Aquí es donde integrarías tu modelo de IA.
+    """
+    text_lower = text.lower()
+    
+    # Detectar habilidades comunes
+    common_skills = [
+        "python", "java", "javascript", "html", "css", "django", "react", "angular", 
+        "node.js", "sql", "marketing", "ventas", "comunicación", "liderazgo", 
+        "desarrollo web", "gestión de proyectos", "excel", "word", "powerpoint"
+    ]
+    
+    detected_skills = []
+    for skill in common_skills:
+        if skill in text_lower:
+            detected_skills.append(skill.capitalize())
+    
+    if detected_skills and not profile.skills:
+        profile.skills = ", ".join(detected_skills)
+    
+    # Detectar lenguajes
+    languages = ["inglés", "español", "francés", "alemán", "italiano", "portugués", "chino", "japonés"]
+    detected_languages = []
+    for lang in languages:
+        if lang in text_lower:
+            detected_languages.append(lang.capitalize())
+    
+    if detected_languages and not profile.languages:
+        profile.languages = ", ".join(detected_languages)
+    
+    # Si no hay un título profesional, intentar extraer algo relevante
+    # (Esta es una implementación muy básica)
+    if not profile.professional_title:
+        professional_titles = [
+            "ingeniero", "desarrollador", "programador", "diseñador", "analista", 
+            "gerente", "director", "especialista", "consultor", "asistente"
+        ]
+        
+        for title in professional_titles:
+            if title in text_lower:
+                # Buscar el título y algunas palabras alrededor
+                index = text_lower.find(title)
+                start = max(0, index - 20)
+                end = min(len(text_lower), index + 30)
+                context = text_lower[start:end]
+                
+                # Si encontramos algo que parece un título, usarlo
+                words = context.split()
+                if len(words) >= 2:
+                    profile.professional_title = " ".join(
+                        word.capitalize() for word in words if len(word) > 2
+                    )[:100]  # Limitar a 100 caracteres
+                    break
 
 def cv_detail(request, pk):
     """Vista para mostrar los detalles del CV y el texto extraído."""
@@ -100,6 +203,16 @@ def process_ocr(request, pk):
         # Guardar el texto extraído
         cv.extracted_text = extracted_text
         cv.save()
+        
+        # Si el usuario es un JobSeeker, actualizar su perfil con la información extraída
+        if request.user.is_authenticated:
+            try:
+                profile = request.user.profile
+                if profile.user_type == 'jobseeker' and profile.cv == cv:
+                    extract_and_update_profile_data(profile, extracted_text)
+                    profile.save()
+            except Exception as e:
+                print(f"Profile update error: {e}")
 
         messages.success(request, 'Text extraction completed successfully!')
     except Exception as e:

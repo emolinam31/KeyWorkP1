@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--secondary), var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 2.5rem;
+        margin-right: 1.5rem;
+    }
+    
+    .profile-info {
+        flex: 1;
+    }
+    
+    .profile-name {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-type {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .profile-type-employer {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+    
+    .profile-type-jobseeker {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+    
+    .profile-email {
+        color: var(--text);
+        opacity: 0.8;
+    }
+    
+    .profile-actions {
+        margin-top: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1.5rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .card-header {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1rem 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--accent);
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .info-item {
+        margin-bottom: 1.25rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        color: var(--text);
+        opacity: 0.8;
+    }
+    
+    .info-value {
+        color: var(--text);
+    }
+    
+    .not-provided {
+        color: var(--text);
+        opacity: 0.5;
+        font-style: italic;
+    }
+    
+    .skill-tag {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cv-preview {
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .cv-text {
+        font-family: monospace;
+        white-space: pre-wrap;
+        color: var(--text);
+        font-size: 0.85rem;
+    }
+    
+    .btn-accent {
+        background: linear-gradient(45deg, var(--secondary), var(--accent));
+        border: none;
+        color: white;
+        padding: 0.6rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-accent:hover {
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text);
+        padding: 0.6rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Cabecera del perfil -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{ user.username|first|upper }}
+        </div>
+        <div class="profile-info">
+            <h1 class="profile-name">{{ user.username }}</h1>
+            {% if user.profile.user_type == 'employer' %}
+                <span class="profile-type profile-type-employer">
+                    <i class="fas fa-building"></i> Empleador
+                </span>
+            {% else %}
+                <span class="profile-type profile-type-jobseeker">
+                    <i class="fas fa-user-tie"></i> Buscador de Empleo
+                </span>
+            {% endif %}
+            <div class="profile-email">
+                <i class="fas fa-envelope"></i> {{ user.email }}
+            </div>
+            <div class="profile-actions">
+                {% if user.profile.user_type == 'employer' %}
+                    <a href="{% url 'complete_employer_profile' %}" class="btn btn-sm btn-accent">
+                        <i class="fas fa-edit"></i> Editar Perfil
+                    </a>
+                    <a href="{% url 'employer_portal' %}" class="btn btn-sm btn-outline">
+                        <i class="fas fa-building"></i> Portal Empleador
+                    </a>
+                {% else %}
+                    <a href="{% url 'complete_jobseeker_profile' %}" class="btn btn-sm btn-accent">
+                        <i class="fas fa-edit"></i> Editar Perfil
+                    </a>
+                    <a href="{% url 'upload_cv' %}" class="btn btn-sm btn-outline">
+                        <i class="fas fa-file-upload"></i> Gestionar CV
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        {% if user.profile.user_type == 'employer' %}
+            <!-- Información del Empleador -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-building"></i> Información de la Empresa
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">Nombre de la Empresa</div>
+                            <div class="info-value">
+                                {% if user.profile.company_name %}
+                                    {{ user.profile.company_name }}
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Industria</div>
+                            <div class="info-value">
+                                {% if user.profile.industry %}
+                                    {{ user.profile.industry }}
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Tamaño de la Empresa</div>
+                            <div class="info-value">
+                                {% if user.profile.company_size %}
+                                    {{ user.profile.company_size }}
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-briefcase"></i> Actividad Reciente
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center">
+                            <i class="fas fa-info-circle"></i> La información de actividad estará disponible próximamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Información del Buscador de Empleo -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-user"></i> Información Personal
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">Nombre Completo</div>
+                            <div class="info-value">
+                                {% if user.profile.full_name %}
+                                    {{ user.profile.full_name }}
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Título Profesional</div>
+                            <div class="info-value">
+                                {% if user.profile.professional_title %}
+                                    {{ user.profile.professional_title }}
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Ubicación</div>
+                            <div class="info-value">
+                                {% if user.profile.location %}
+                                    {{ user.profile.location }}
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Años de Experiencia</div>
+                            <div class="info-value">
+                                {% if user.profile.years_experience %}
+                                    {{ user.profile.years_experience }} años
+                                {% else %}
+                                    <span class="not-provided">No proporcionado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt"></i> CV y Extracto
+                    </div>
+                    <div class="card-body">
+                        {% if user.profile.cv %}
+                            <div class="info-item">
+                                <div class="info-label">CV Subido</div>
+                                <div class="info-value">
+                                    <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="btn btn-sm btn-outline">
+                                        <i class="fas fa-eye"></i> Ver CV Completo
+                                    </a>
+                                </div>
+                            </div>
+                            {% if user.profile.cv.extracted_text %}
+                                <div class="info-item">
+                                    <div class="info-label">Extracto del CV</div>
+                                    <div class="cv-preview">
+                                        <div class="cv-text">{{ user.profile.cv.extracted_text|truncatechars:300 }}</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-center">
+                                <i class="fas fa-info-circle"></i> No has subido ningún CV todavía.
+                                <br>
+                                <a href="{% url 'upload_cv' %}" class="btn btn-sm btn-accent mt-2">
+                                    <i class="fas fa-file-upload"></i> Subir mi CV
+                                </a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-tools"></i> Habilidades
+                    </div>
+                    <div class="card-body">
+                        {% if user.profile.skills %}
+                            <div class="skills-container">
+                                {% for skill in user.profile.skills_as_list %}
+                                    <span class="skill-tag">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-center not-provided">
+                                No has agregado habilidades a tu perfil.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-graduation-cap"></i> Educación
+                    </div>
+                    <div class="card-body">
+                        {% if user.profile.education %}
+                            <div class="info-value">
+                                {{ user.profile.education|linebreaks }}
+                            </div>
+                        {% else %}
+                            <p class="text-center not-provided">
+                                No has agregado información sobre tu educación.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-globe"></i> Idiomas
+                    </div>
+                    <div class="card-body">
+                        {% if user.profile.languages %}
+                            <div class="languages-container">
+                                {% for language in user.profile.languages_as_list %}
+                                    <span class="skill-tag">{{ language }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-center not-provided">
+                                No has agregado idiomas a tu perfil.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

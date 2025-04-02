@@ -29,14 +29,17 @@
         transition: all 0.3s;
         margin: 1rem 0;
         width: 250px;
+        display: inline-block;
+        text-decoration: none;
     }
     .main-button:hover {
         background-color: #00a8e0;
         transform: translateY(-3px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        color: #fff;
+        text-decoration: none;
     }
     .upload-options {
-        display: none;
         margin-top: 1.5rem;
     }
     .option-button {
@@ -50,13 +53,37 @@
         transition: all 0.3s;
         width: 220px;
         text-align: left;
+        display: inline-block;
+        text-decoration: none;
     }
     .option-button:hover {
         background-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-2px);
+        color: #fff;
+        text-decoration: none;
     }
     .option-button i {
         margin-right: 8px;
+    }
+    .auth-buttons {
+        margin-top: 2rem;
+    }
+    .auth-link {
+        color: #00c3ff;
+        margin: 0 1rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    .auth-link:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+    .user-message {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        display: inline-block;
     }
 </style>
 {% endblock %}
@@ -65,64 +92,67 @@
 <div class="welcome-container">
     <div class="welcome-text">🚀 ¡Bienvenido a KeyWork! 🌟</div>
     
-    <button id="uploadCvBtn" class="main-button">
-        <i class="fas fa-file-upload"></i> Upload your CV
-    </button>
-    
-    <div id="uploadOptions" class="upload-options">
-        <form id="uploadForm" method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="hidden" name="upload_type" id="uploadType" value="">
-            <input type="file" id="fileInput" name="file" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
+    {% if user.is_authenticated %}
+        {% if user.profile.user_type == 'jobseeker' %}
+            <!-- Usuario autenticado como JobSeeker -->
+            <div class="upload-options">
+                <h3>Sube tu CV en uno de estos formatos:</h3>
+                <form method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="upload_type" value="document">
+                    <button type="submit" class="option-button">
+                        <i class="fas fa-file-pdf"></i> Documento (PDF)
+                    </button>
+                </form>
+                
+                <form method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="upload_type" value="image">
+                    <button type="submit" class="option-button">
+                        <i class="fas fa-image"></i> Foto (JPG, PNG)
+                    </button>
+                </form>
+                
+                <form method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="upload_type" value="audio">
+                    <button type="submit" class="option-button" disabled>
+                        <i class="fas fa-microphone"></i> Grabación de Voz
+                        <small class="d-block text-muted">(Próximamente)</small>
+                    </button>
+                </form>
+            </div>
             
-            <button type="button" id="documentBtn" class="option-button">
-                <i class="fas fa-file-pdf"></i> Document (PDF)
-            </button>
+            {% if user.profile.cv %}
+                <div class="user-message">
+                    <p>Ya has subido tu CV. <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="auth-link">Ver detalles</a></p>
+                </div>
+            {% endif %}
+        {% elif user.profile.user_type == 'employer' %}
+            <!-- Usuario autenticado como Employer -->
+            <a href="{% url 'employer_portal' %}" class="main-button">
+                <i class="fas fa-building"></i> Ir al Portal de Empleador
+            </a>
             
-            <button type="button" id="imageBtn" class="option-button">
-                <i class="fas fa-image"></i> Photo (JPG, PNG)
-            </button>
-            
-            <button type="button" id="audioBtn" class="option-button" disabled>
-                <i class="fas fa-microphone"></i> Voice Recording
-                <small class="d-block text-muted">(Coming soon)</small>
-            </button>
-        </form>
-    </div>
+            <div class="user-message">
+                <p>Accede a tu portal para publicar vacantes y encontrar candidatos.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Usuario no autenticado -->
+        <div>
+            <a href="{% url 'login' %}" class="main-button">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </a>
+        </div>
+        
+        <div class="auth-buttons">
+            ¿No tienes una cuenta? <a href="{% url 'signup' %}" class="auth-link">Regístrate aquí</a>
+        </div>
+    {% endif %}
     
     <div class="mt-4">
-        Find the perfect job match with KeyWork
+        Encuentra el trabajo perfecto con KeyWork
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.getElementById('uploadCvBtn').addEventListener('click', function() {
-        const options = document.getElementById('uploadOptions');
-        if (options.style.display === 'block') {
-            options.style.display = 'none';
-        } else {
-            options.style.display = 'block';
-        }
-    });
-
-    document.getElementById('documentBtn').addEventListener('click', function() {
-        document.getElementById('uploadType').value = 'document';
-        document.getElementById('fileInput').accept = '.pdf,.doc,.docx';
-        document.getElementById('fileInput').click();
-    });
-
-    document.getElementById('imageBtn').addEventListener('click', function() {
-        document.getElementById('uploadType').value = 'image';
-        document.getElementById('fileInput').accept = '.jpg,.jpeg,.png';
-        document.getElementById('fileInput').click();
-    });
-
-    document.getElementById('fileInput').addEventListener('change', function() {
-        if (this.files.length > 0) {
-            document.getElementById('uploadForm').submit();
-        }
-    });
-</script>
 {% endblock %}

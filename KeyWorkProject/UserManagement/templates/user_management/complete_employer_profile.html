@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Completar Perfil de Empleador - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .profile-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-title {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--accent);
+    }
+    
+    .profile-subtitle {
+        color: var(--text);
+        opacity: 0.8;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent);
+        color: var(--text);
+        box-shadow: 0 0 0 0.25rem rgba(26, 188, 156, 0.25);
+    }
+    
+    .form-label {
+        color: var(--text);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, var(--secondary), var(--accent));
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .field-tip {
+        font-size: 0.875rem;
+        color: var(--text);
+        opacity: 0.7;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1 class="profile-title">Perfil de Empleador</h1>
+            <p class="profile-subtitle">Complete los detalles de su empresa para comenzar a publicar vacantes.</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_company_name" class="form-label">Nombre de la empresa</label>
+                <input type="text" name="company_name" id="id_company_name" class="form-control" {% if form.company_name.value %}value="{{ form.company_name.value }}"{% endif %}>
+                {% if form.company_name.errors %}
+                    <div class="text-danger mt-1">{{ form.company_name.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_industry" class="form-label">Industria</label>
+                        <input type="text" name="industry" id="id_industry" class="form-control" {% if form.industry.value %}value="{{ form.industry.value }}"{% endif %}>
+                        {% if form.industry.errors %}
+                            <div class="text-danger mt-1">{{ form.industry.errors }}</div>
+                        {% endif %}
+                        <div class="field-tip">Ejemplo: Tecnología, Salud, Finanzas, etc.</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_company_size" class="form-label">Tamaño de la empresa</label>
+                        <input type="text" name="company_size" id="id_company_size" class="form-control" {% if form.company_size.value %}value="{{ form.company_size.value }}"{% endif %}>
+                        {% if form.company_size.errors %}
+                            <div class="text-danger mt-1">{{ form.company_size.errors }}</div>
+                        {% endif %}
+                        <div class="field-tip">Ejemplo: 1-10, 11-50, 51-200, 201-500, 500+</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Perfil
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
