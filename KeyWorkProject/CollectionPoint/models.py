@@ -3,7 +3,7 @@ from django.db import models
 
 class CV(models.Model):
     UPLOAD_TYPES = (
-        ('document', 'Document (PDF, Word)'),
+        ('document', 'Document (PDF)'),
         ('image', 'Photo (JPG, PNG)'),
         ('audio', 'Voice Recording'),
     )

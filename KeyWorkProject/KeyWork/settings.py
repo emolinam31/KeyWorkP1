@@ -38,10 +38,9 @@ INSTALLED_APPS = [
     'rest_framework',  # Para APIs REST
     'CollectionPoint',  # Nuestra app principal
     'UserManagement',   # App para la gestión de usuarios
-    'Notifications',    # App para notificaciones
     'JobSeekerPortal',  # App para el portal de quien busca empleo
     'EmployerPortal',   # App para el portal de empleadores
-    # 'cv_processing',  # Comentada o eliminada porque no se está utilizando
+    
 ]
 
 MIDDLEWARE = [
