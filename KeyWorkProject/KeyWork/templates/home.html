@@ -39,6 +39,27 @@
         color: #fff;
         text-decoration: none;
     }
+    .secondary-button {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin: 1rem 0;
+        width: 250px;
+        display: inline-block;
+        text-decoration: none;
+    }
+    .secondary-button:hover {
+        background-color: #218838;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        color: #fff;
+        text-decoration: none;
+    }
     .upload-options {
         margin-top: 1.5rem;
     }
@@ -85,6 +106,13 @@
         border-radius: 10px;
         display: inline-block;
     }
+    .button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
 </style>
 {% endblock %}
 
@@ -93,18 +121,7 @@
     <div class="welcome-text">🚀 ¡Bienvenido a KeyWork! 🌟</div>
     
     {% if user.is_authenticated %}
-        {% if user.profile.user_type == 'jobseeker' %}
-            <!-- Usuario autenticado como JobSeeker -->
-            <a href="{% url 'upload_cv' %}" class="main-button">
-                <i class="fas fa-file-upload"></i> Subir mi CV
-            </a>
-            
-            {% if user.profile.cv %}
-                <div class="user-message">
-                    <p>Ya has subido tu CV. <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="auth-link">Ver detalles</a></p>
-                </div>
-            {% endif %}
-        {% elif user.profile.user_type == 'employer' %}
+        {% if user.profile.user_type == 'employer' %}
             <!-- Usuario autenticado como Employer -->
             <a href="{% url 'employer_portal' %}" class="main-button">
                 <i class="fas fa-building"></i> Ir al Portal de Empleador
@@ -113,6 +130,23 @@
             <div class="user-message">
                 <p>Accede a tu portal para publicar vacantes y encontrar candidatos.</p>
             </div>
+        {% else %}
+            <!-- Usuario autenticado como JobSeeker -->
+            <div class="button-container">
+                <a href="{% url 'upload_cv' %}" class="main-button">
+                    <i class="fas fa-file-upload"></i> Subir mi CV
+                </a>
+                
+                <a href="#" class="secondary-button">
+                    <i class="fas fa-briefcase"></i> Aplicar a Empleos
+                </a>
+            </div>
+            
+            {% if user.profile.cv %}
+                <div class="user-message">
+                    <p>Ya has subido tu CV. <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="auth-link">Ver detalles</a></p>
+                </div>
+            {% endif %}
         {% endif %}
     {% else %}
         <!-- Usuario no autenticado -->

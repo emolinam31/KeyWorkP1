@@ -94,7 +94,7 @@ def upload_cv(request):
                             extract_and_update_profile_data(profile, extracted_text)
                         
                         profile.save()
-                        messages.success(request, 'CV uploaded and associated with your profile!')
+                        messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
                 except Exception as e:
                     print(f"Profile association error: {e}")
                     messages.warning(request, 'CV uploaded but profile association failed.')
@@ -186,6 +186,29 @@ def cv_detail(request, pk):
     """Vista para mostrar los detalles del CV y el texto extraído."""
     cv = get_object_or_404(CV, pk=pk)
     return render(request, 'cv_detail.html', {'cv': cv})
+
+@login_required
+def delete_cv(request, pk):
+    """Eliminar un CV."""
+    cv = get_object_or_404(CV, pk=pk)
+    
+    # Verificar que el usuario tiene permiso para eliminar este CV
+    try:
+        profile = request.user.profile
+        if profile.cv == cv:
+            # Desasociar el CV del perfil
+            profile.cv = None
+            profile.save()
+            
+            # Eliminar el CV de la base de datos
+            cv.delete()
+            messages.success(request, '¡CV eliminado exitosamente!')
+        else:
+            messages.error(request, 'No tienes permiso para eliminar este CV.')
+    except Exception as e:
+        messages.error(request, f'Error al eliminar el CV: {str(e)}')
+    
+    return redirect('profile')
 
 def process_ocr(request, pk):
     """Procesar o reprocesar una imagen existente con OCR."""
