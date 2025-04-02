@@ -95,33 +95,9 @@
     {% if user.is_authenticated %}
         {% if user.profile.user_type == 'jobseeker' %}
             <!-- Usuario autenticado como JobSeeker -->
-            <div class="upload-options">
-                <h3>Sube tu CV en uno de estos formatos:</h3>
-                <form method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type="hidden" name="upload_type" value="document">
-                    <button type="submit" class="option-button">
-                        <i class="fas fa-file-pdf"></i> Documento (PDF)
-                    </button>
-                </form>
-                
-                <form method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type="hidden" name="upload_type" value="image">
-                    <button type="submit" class="option-button">
-                        <i class="fas fa-image"></i> Foto (JPG, PNG)
-                    </button>
-                </form>
-                
-                <form method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type="hidden" name="upload_type" value="audio">
-                    <button type="submit" class="option-button" disabled>
-                        <i class="fas fa-microphone"></i> Grabación de Voz
-                        <small class="d-block text-muted">(Próximamente)</small>
-                    </button>
-                </form>
-            </div>
+            <a href="{% url 'upload_cv' %}" class="main-button">
+                <i class="fas fa-file-upload"></i> Subir mi CV
+            </a>
             
             {% if user.profile.cv %}
                 <div class="user-message">

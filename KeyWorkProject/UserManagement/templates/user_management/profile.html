@@ -172,6 +172,29 @@
         color: var(--accent);
         background-color: rgba(255, 255, 255, 0.05);
     }
+    
+    .upload-cv-btn {
+        display: block;
+        text-align: center;
+        margin: 1rem auto;
+        background: linear-gradient(45deg, var(--secondary), var(--accent));
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        max-width: 280px;
+    }
+    
+    .upload-cv-btn:hover {
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
 </style>
 {% endblock %}
 
@@ -222,6 +245,13 @@
                 {{ message }}
             </div>
         {% endfor %}
+    {% endif %}
+    
+    <!-- Botón principal para subir CV si es JobSeeker -->
+    {% if user.profile.user_type == 'jobseeker' and not user.profile.cv %}
+    <a href="{% url 'upload_cv' %}" class="upload-cv-btn">
+        <i class="fas fa-file-upload"></i> Subir mi Currículum
+    </a>
     {% endif %}
     
     <div class="row">
@@ -354,7 +384,7 @@
                             <p class="text-center">
                                 <i class="fas fa-info-circle"></i> No has subido ningún CV todavía.
                                 <br>
-                                <a href="{% url 'upload_cv' %}" class="btn btn-sm btn-accent mt-2">
+                                <a href="{% url 'upload_cv' %}" class="btn btn-accent btn-lg mt-3">
                                     <i class="fas fa-file-upload"></i> Subir mi CV
                                 </a>
                             </p>
