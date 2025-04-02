@@ -8,9 +8,13 @@ pip install djangorestframework
 pip install pytesseract   
 pip install Pillow  
 pip install django-cors-headers 
+
 pip install PIL
+
 pip install PyPDF2
+
 pip install pdf2image
+
 # Para conversión voz a texto
 pip install openai    
 
