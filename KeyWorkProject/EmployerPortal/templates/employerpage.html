@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block title %}Portal del Empleador - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .employer-container {
+        text-align: center;
+        padding: 2rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .welcome-text {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+    }
+    .action-cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+    .action-card {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        padding: 2rem;
+        width: 300px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .action-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(0, 195, 255, 0.3);
+    }
+    .action-icon {
+        font-size: 4rem;
+        color: #00c3ff;
+        margin-bottom: 1.5rem;
+    }
+    .action-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: white;
+    }
+    .action-description {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    .action-button {
+        background-color: #00c3ff;
+        color: #fff;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        margin-top: auto;
+        display: inline-block;
+    }
+    .action-button:hover {
+        background-color: #00a8e0;
+        transform: scale(1.05);
+        color: white;
+    }
+    .dashboard-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    .stat-card {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        padding: 1.5rem;
+        width: 200px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #00c3ff;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .recent-section {
+        margin-top: 3rem;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .recent-section h2 {
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
+    }
+    .vacancy-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background-color 0.3s;
+    }
+    .vacancy-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .vacancy-info h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.3rem;
+    }
+    .vacancy-meta {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .status-active {
+        background-color: rgba(25, 135, 84, 0.2);
+        color: #198754;
+    }
+    .status-draft {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+    .status-closed {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="employer-container">
+    <div class="welcome-text">🚀 Portal del Empleador</div>
+    
+    <!-- Estadísticas del Dashboard -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-number">3</div>
+            <div class="stat-label">Vacantes Activas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">24</div>
+            <div class="stat-label">Candidatos Encontrados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">8</div>
+            <div class="stat-label">Notificaciones Enviadas</div>
+        </div>
+    </div>
+    
+    <!-- Tarjetas de Acción -->
+    <div class="action-cards">
+        <!-- Subir Vacante -->
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-file-upload"></i>
+            </div>
+            <h2 class="action-title">Publicar Vacante</h2>
+            <p class="action-description">
+                Crea una nueva oferta de empleo y encuentra al candidato ideal para tu empresa.
+            </p>
+            <a href="{% url 'upload_vacancy' %}" class="action-button">
+                <i class="fas fa-plus-circle"></i> Crear Vacante
+            </a>
+        </div>
+        
+        <!-- Buscar Candidato -->
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h2 class="action-title">Buscar Candidato</h2>
+            <p class="action-description">
+                Encuentra al mejor talento para tu vacante utilizando nuestro sistema de coincidencia inteligente.
+            </p>
+            <a href="{% url 'find_candidate' %}" class="action-button">
+                <i class="fas fa-user-check"></i> Encontrar Talento
+            </a>
+        </div>
+        
+        <!-- Notificar Candidato -->
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <h2 class="action-title">Notificar Candidato</h2>
+            <p class="action-description">
+                Contacta con los candidatos seleccionados para obtener más información o programar entrevistas.
+            </p>
+            <a href="{% url 'notify_candidate' %}" class="action-button">
+                <i class="fas fa-paper-plane"></i> Enviar Notificación
+            </a>
+        </div>
+    </div>
+    
+    <!-- Sección de Vacantes Recientes -->
+    <div class="recent-section">
+        <h2><i class="fas fa-list-ul"></i> Vacantes Recientes</h2>
+        
+        <div class="vacancy-item">
+            <div class="vacancy-info">
+                <h3>Desarrollador Frontend</h3>
+                <div class="vacancy-meta">
+                    <span><i class="fas fa-building"></i> Empresa ABC</span> • 
+                    <span><i class="fas fa-map-marker-alt"></i> Bogotá</span> • 
+                    <span><i class="fas fa-calendar"></i> Publicado: 28/03/2025</span>
+                </div>
+            </div>
+            <div class="vacancy-actions">
+                <span class="status-badge status-active">Activa</span>
+                <a href="{% url 'vacancy_detail' 1 %}" class="btn btn-sm btn-outline-light ms-2">Ver Detalles</a>
+            </div>
+        </div>
+        
+        <div class="vacancy-item">
+            <div class="vacancy-info">
+                <h3>Ingeniero de Datos Senior</h3>
+                <div class="vacancy-meta">
+                    <span><i class="fas fa-building"></i> Tech Solutions</span> • 
+                    <span><i class="fas fa-map-marker-alt"></i> Medellín</span> • 
+                    <span><i class="fas fa-calendar"></i> Publicado: 25/03/2025</span>
+                </div>
+            </div>
+            <div class="vacancy-actions">
+                <span class="status-badge status-active">Activa</span>
+                <a href="{% url 'vacancy_detail' 2 %}" class="btn btn-sm btn-outline-light ms-2">Ver Detalles</a>
+            </div>
+        </div>
+        
+        <div class="vacancy-item">
+            <div class="vacancy-info">
+                <h3>Diseñador UX/UI</h3>
+                <div class="vacancy-meta">
+                    <span><i class="fas fa-building"></i> Creative Design</span> • 
+                    <span><i class="fas fa-map-marker-alt"></i> Remoto</span> • 
+                    <span><i class="fas fa-calendar"></i> Publicado: 20/03/2025</span>
+                </div>
+            </div>
+            <div class="vacancy-actions">
+                <span class="status-badge status-draft">Borrador</span>
+                <a href="{% url 'vacancy_detail' 3 %}" class="btn btn-sm btn-outline-light ms-2">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
