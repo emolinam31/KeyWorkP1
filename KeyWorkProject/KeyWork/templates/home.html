@@ -73,10 +73,10 @@
         <form id="uploadForm" method="post" action="{% url 'upload_cv' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="upload_type" id="uploadType" value="">
-            <input type="file" id="fileInput" name="file" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            <input type="file" id="fileInput" name="file" style="display: none;" accept=".pdf,.jpg,.jpeg,.png">
             
             <button type="button" id="documentBtn" class="option-button">
-                <i class="fas fa-file-pdf"></i> Document (PDF, Word)
+                <i class="fas fa-file-pdf"></i> Document (PDF)
             </button>
             
             <button type="button" id="imageBtn" class="option-button">
@@ -109,7 +109,7 @@
 
     document.getElementById('documentBtn').addEventListener('click', function() {
         document.getElementById('uploadType').value = 'document';
-        document.getElementById('fileInput').accept = '.pdf,.doc,.docx';
+        document.getElementById('fileInput').accept = "pdf";
         document.getElementById('fileInput').click();
     });
 
