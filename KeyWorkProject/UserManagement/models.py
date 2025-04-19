@@ -8,14 +8,35 @@ class UserProfile(models.Model):
         ('jobseeker', 'Buscador de Empleo'),
     )
     
+    COMPANY_SIZE_CHOICES = (
+        ('1-10', '1-10 empleados'),
+        ('11-50', '11-50 empleados'),
+        ('51-200', '51-200 empleados'),
+        ('201-500', '201-500 empleados'),
+        ('501-1000', '501-1000 empleados'),
+        ('1000+', 'Más de 1000 empleados'),
+    )
+    
+    AVAILABILITY_CHOICES = (
+        ('immediate', 'Inmediata'),
+        ('2_weeks', '2 semanas'),
+        ('1_month', '1 mes'),
+        ('negotiable', 'Negociable'),
+    )
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     # Campos para empleadores
     company_name = models.CharField(max_length=100, blank=True, null=True)
     industry = models.CharField(max_length=100, blank=True, null=True)
-    company_size = models.CharField(max_length=50, blank=True, null=True)
+    company_size = models.CharField(max_length=10, choices=COMPANY_SIZE_CHOICES, blank=True, null=True)
+    company_website = models.URLField(blank=True, null=True)
+    company_description = models.TextField(blank=True, null=True)
+    company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    company_location = models.CharField(max_length=150, blank=True, null=True)
     
     # Campos para buscadores de empleo
     full_name = models.CharField(max_length=150, blank=True, null=True)
@@ -25,6 +46,9 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=150, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
+    availability = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES, blank=True, null=True)
+    desired_salary = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    remote_work = models.BooleanField(default=False, verbose_name="Disponible para trabajo remoto")
     
     # Campos para habilidades y educación
     skills = models.TextField(blank=True, null=True, help_text="Habilidades separadas por comas")
@@ -32,9 +56,17 @@ class UserProfile(models.Model):
     languages = models.CharField(max_length=200, blank=True, null=True, help_text="Idiomas separados por comas")
     
     # Relación con CV
-    cv = models.ForeignKey('CollectionPoint.CV', on_delete=models.SET_NULL, blank=True, null=True, related_name='profiles')
+    cv = models.ForeignKey(CV, on_delete=models.SET_NULL, blank=True, null=True, related_name='profiles')
+    
+    class Meta:
+        verbose_name = "Perfil de Usuario"
+        verbose_name_plural = "Perfiles de Usuario"
     
     def __str__(self):
+        if self.user_type == 'employer' and self.company_name:
+            return f"{self.company_name} ({self.get_user_type_display()})"
+        elif self.user_type == 'jobseeker' and self.full_name:
+            return f"{self.full_name} ({self.get_user_type_display()})"
         return f"{self.user.username} ({self.get_user_type_display()})"
     
     def skills_as_list(self):
