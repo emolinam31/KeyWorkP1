@@ -7,44 +7,247 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --primary: #2C3E50;
+            --secondary: #3498DB;
+            --accent: #1ABC9C;
+            --light: #ECF0F1;
+            --dark: #1A2530;
+            --gradient-start: #3498DB;
+            --gradient-end: #1ABC9C;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --text: #E0E0E0;
+        }
+        
         body {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
         }
+        
         .main-content {
             flex: 1;
-            background: linear-gradient(135deg, rgb(37, 114, 30), rgb(152, 42, 71));
-            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: var(--text);
             padding: 2rem 0;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .main-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 20%, var(--gradient-start) 0%, transparent 20%),
+                        radial-gradient(circle at 85% 60%, var(--gradient-end) 0%, transparent 20%);
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .main-content > div {
+            position: relative;
+            z-index: 1;
+        }
+        
         .navbar {
-            background-color: rgba(25, 25, 25, 0.9) !important;
+            background-color: var(--dark) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 0;
         }
+        
         .navbar-brand {
             font-weight: bold;
-            color: #00c3ff !important;
+            color: var(--accent) !important;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 15px rgba(26, 188, 156, 0.5);
+        }
+        
         .nav-link {
-            color: white !important;
-            transition: color 0.3s;
+            color: var(--light) !important;
+            transition: all 0.3s ease;
+            margin: 0 8px;
+            position: relative;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
         }
+        
         .nav-link:hover {
-            color: #00c3ff !important;
+            color: var(--accent) !important;
+            background-color: rgba(255, 255, 255, 0.05);
         }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: var(--accent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover::after {
+            width: 80%;
+        }
+        
         .footer {
-            background-color: #222;
-            color: #f8f9fa;
-            padding: 1rem 0;
+            background-color: var(--dark);
+            color: var(--text);
+            padding: 1.5rem 0;
             text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .employer-btn {
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            color: white !important;
+            border-radius: 50px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            margin-left: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .employer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(45deg, var(--accent), var(--secondary));
+        }
+        
+        .employer-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Animación sutil para el fondo */
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Mejora de scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+        
+        /* User menu dropdown */
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .dropdown-menu {
+            background-color: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .dropdown-item {
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--accent);
+        }
+        
+        .dropdown-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Alert messages */
+        .alert {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: none;
+            border-left: 4px solid;
+            color: var(--text);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .alert-success {
+            border-left-color: #2ecc71;
+        }
+        
+        .alert-warning {
+            border-left-color: #f39c12;
+        }
+        
+        .alert-danger {
+            border-left-color: #e74c3c;
+        }
+        
+        .alert-info {
+            border-left-color: #3498db;
+        }
+        
+        .messages-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            width: 300px;
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">🚀 KeyWork</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -53,15 +256,81 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        <a class="nav-link" href="{% url 'home' %}">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                        <a class="nav-link" href="{% url 'about' %}">
+                            <i class="fas fa-info-circle"></i> Acerca de
+                        </a>
                     </li>
+                    
+                    {% if user.is_authenticated %}
+                        {% if user.profile.user_type == 'employer' %}
+                            <li class="nav-item">
+                                <a class="nav-link employer-btn" href="{% url 'employer_portal' %}">
+                                    <i class="fas fa-building"></i> Portal Empleador
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="user-avatar">{{ user.username|first|upper }}</span>
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                    <i class="fas fa-user"></i> Mi Perfil
+                                </a></li>
+                                
+                                {% if user.profile.user_type == 'jobseeker' %}
+                                    <li><a class="dropdown-item" href="{% url 'upload_cv' %}">
+                                        <i class="fas fa-file-upload"></i> Subir CV
+                                    </a></li>
+                                {% endif %}
+                                
+                                {% if user.profile.user_type == 'employer' %}
+                                    <li><a class="dropdown-item" href="{% url 'employer_portal' %}">
+                                        <i class="fas fa-building"></i> Portal Empleador
+                                    </a></li>
+                                {% endif %}
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link employer-btn" href="{% url 'signup' %}">
+                                <i class="fas fa-user-plus"></i> Registrarse
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Messages Container -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- Main Content -->
     <div class="main-content">
@@ -71,7 +340,12 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 KeyWork. All rights reserved.</p>
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="mb-1">&copy; 2025 KeyWork. Todos los derechos reservados.</p>
+                    <p class="mb-0 text-muted small">Conectando talento con oportunidades</p>
+                </div>
+            </div>
         </div>
     </footer>
 

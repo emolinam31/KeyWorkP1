@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center;
+    }
+    
+    .upload-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--accent);
+    }
+    
+    .upload-subtitle {
+        color: var(--text);
+        opacity: 0.8;
+        margin-bottom: 2rem;
+    }
+    
+    .file-input-wrapper {
+        margin-bottom: 2rem;
+    }
+    
+    .file-input-label {
+        display: block;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 3rem 2rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .file-input-label:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-color: var(--accent);
+    }
+    
+    .file-input-icon {
+        font-size: 3rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+    
+    .file-input-text {
+        font-size: 1.2rem;
+        color: var(--text);
+    }
+    
+    .file-input {
+        display: none;
+    }
+    
+    .file-name {
+        font-size: 0.9rem;
+        color: var(--text);
+        opacity: 0.8;
+        margin-bottom: 1rem;
+    }
+    
+    .submit-button {
+        background: linear-gradient(45deg, var(--secondary), var(--accent));
+        border: none;
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .submit-button:hover {
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-top: 1.5rem;
+        color: var(--text);
+        text-decoration: none;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        color: var(--accent);
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="upload-container">
+        <h1 class="upload-title">{{ title }}</h1>
+        <p class="upload-subtitle">Sube tu CV para encontrar las mejores oportunidades</p>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_cv' %}">
+            {% csrf_token %}
+            <input type="hidden" name="upload_type" value="{{ upload_type }}">
+            
+            <div class="file-input-wrapper">
+                <label for="file-input" class="file-input-label">
+                    {% if upload_type == 'document' %}
+                        <div class="file-input-icon"><i class="fas fa-file-pdf"></i></div>
+                        <div class="file-input-text">Haz clic para seleccionar un documento PDF</div>
+                    {% elif upload_type == 'image' %}
+                        <div class="file-input-icon"><i class="fas fa-image"></i></div>
+                        <div class="file-input-text">Haz clic para seleccionar una imagen (JPG, PNG)</div>
+                    {% else %}
+                        <div class="file-input-icon"><i class="fas fa-microphone"></i></div>
+                        <div class="file-input-text">Haz clic para seleccionar una grabación de voz (Próximamente)</div>
+                    {% endif %}
+                </label>
+                <input type="file" id="file-input" name="file" class="file-input" accept="{{ accept }}" required>
+                <div id="file-name" class="file-name">Ningún archivo seleccionado</div>
+            </div>
+            
+            <button type="submit" class="submit-button">
+                <i class="fas fa-upload"></i> Subir CV
+            </button>
+        </form>
+        
+        <a href="{% url 'home' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Volver a la página principal
+        </a>
+    </div>
+</div>
+
+<!-- Este pequeño script es necesario para mostrar el nombre del archivo seleccionado -->
+<script>
+    document.getElementById('file-input').addEventListener('change', function() {
+        var fileName = this.files[0] ? this.files[0].name : 'Ningún archivo seleccionado';
+        document.getElementById('file-name').textContent = fileName;
+    });
+</script>
+{% endblock %}

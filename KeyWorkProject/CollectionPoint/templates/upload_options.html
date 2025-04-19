@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center;
+    }
+    
+    .upload-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--accent);
+    }
+    
+    .upload-subtitle {
+        color: var(--text);
+        opacity: 0.8;
+        margin-bottom: 2rem;
+    }
+    
+    .option-card {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        display: block;
+        text-decoration: none;
+        color: var(--text);
+    }
+    
+    .option-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border-color: var(--accent);
+        color: var(--text);
+    }
+    
+    .option-icon {
+        font-size: 3rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+    
+    .option-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .option-description {
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-top: 1.5rem;
+        color: var(--text);
+        text-decoration: none;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        color: var(--accent);
+        opacity: 1;
+    }
+    
+    .alert {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #ffc107;
+        text-align: left;
+    }
+    
+    .alert-info {
+        background-color: rgba(0, 195, 255, 0.1);
+        color: #00c3ff;
+        border-left-color: #00c3ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="upload-container">
+        <h1 class="upload-title">{{ title }}</h1>
+        <p class="upload-subtitle">Elige el formato en el que deseas subir tu CV para encontrar las mejores oportunidades</p>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if is_required %}
+        <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle"></i> Para completar su perfil, es necesario que suba su hoja de vida.
+        </div>
+        {% endif %}
+
+        {% if has_cv %}
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle"></i> Ya tiene una hoja de vida asociada a su perfil. Si sube una nueva, reemplazará la anterior.
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <form method="POST" action="{% url 'upload_cv' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="upload_type" value="document">
+                    <button type="submit" class="option-card w-100 text-start border-0">
+                        <div class="option-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h3 class="option-title">Documento PDF</h3>
+                        <p class="option-description">Sube tu CV como un archivo PDF</p>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="col-md-6">
+                <form method="POST" action="{% url 'upload_cv' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="upload_type" value="image">
+                    <button type="submit" class="option-card w-100 text-start border-0">
+                        <div class="option-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3 class="option-title">Imagen</h3>
+                        <p class="option-description">Sube tu CV como una imagen JPG o PNG</p>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <form method="POST" action="{% url 'upload_cv' %}">
+                {% csrf_token %}
+                <input type="hidden" name="upload_type" value="audio">
+                <button type="submit" class="option-card w-100 text-start border-0" disabled>
+                    <div class="option-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3 class="option-title">Grabación de Voz</h3>
+                    <p class="option-description">Próximamente: Graba tu CV en audio</p>
+                </button>
+            </form>
+        </div>
+        
+        <a href="{% url 'profile' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Volver a mi Perfil
+        </a>
+    </div>
+</div>
+{% endblock %}

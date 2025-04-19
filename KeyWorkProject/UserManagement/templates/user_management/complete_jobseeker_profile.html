@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Completar Perfil - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .profile-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-title {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--accent);
+    }
+    
+    .profile-subtitle {
+        color: var(--text);
+        opacity: 0.8;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent);
+        color: var(--text);
+        box-shadow: 0 0 0 0.25rem rgba(26, 188, 156, 0.25);
+    }
+    
+    .form-label {
+        color: var(--text);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, var(--secondary), var(--accent));
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-divider {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 1.5rem 0;
+        padding-top: 1.5rem;
+    }
+    
+    .section-title {
+        margin-bottom: 1.5rem;
+        color: var(--accent);
+        font-weight: 600;
+    }
+    
+    .field-tip {
+        font-size: 0.875rem;
+        color: var(--text);
+        opacity: 0.7;
+        margin-top: 0.25rem;
+    }
+    
+    /* Estilos para la imagen del CV */
+    .cv-preview {
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 1rem;
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .cv-text {
+        font-family: monospace;
+        white-space: pre-wrap;
+        color: var(--text);
+    }
+    
+    .alert {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .alert-info {
+        background-color: rgba(0, 195, 255, 0.1);
+        color: #00c3ff;
+        border-left-color: #00c3ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1 class="profile-title">Completa tu Perfil</h1>
+            <p class="profile-subtitle">Ayúdanos a conocerte mejor para encontrarte las mejores oportunidades.</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <h3 class="section-title">Información Personal</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_full_name" class="form-label">Nombre completo</label>
+                        <input type="text" name="full_name" id="id_full_name" class="form-control" {% if form.full_name.value %}value="{{ form.full_name.value }}"{% endif %}>
+                        {% if form.full_name.errors %}
+                            <div class="text-danger mt-1">{{ form.full_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_date_of_birth" class="form-label">Fecha de nacimiento</label>
+                        <input type="date" name="date_of_birth" id="id_date_of_birth" class="form-control" {% if form.date_of_birth.value %}value="{{ form.date_of_birth.value|date:'Y-m-d' }}"{% endif %}>
+                        {% if form.date_of_birth.errors %}
+                            <div class="text-danger mt-1">{{ form.date_of_birth.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_phone_number" class="form-label">Número de teléfono</label>
+                        <input type="text" name="phone_number" id="id_phone_number" class="form-control" {% if form.phone_number.value %}value="{{ form.phone_number.value }}"{% endif %}>
+                        {% if form.phone_number.errors %}
+                            <div class="text-danger mt-1">{{ form.phone_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_location" class="form-label">Ubicación</label>
+                        <input type="text" name="location" id="id_location" class="form-control" {% if form.location.value %}value="{{ form.location.value }}"{% endif %}>
+                        {% if form.location.errors %}
+                            <div class="text-danger mt-1">{{ form.location.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_bio" class="form-label">Biografía</label>
+                <textarea name="bio" id="id_bio" rows="4" class="form-control">{% if form.bio.value %}{{ form.bio.value }}{% endif %}</textarea>
+                {% if form.bio.errors %}
+                    <div class="text-danger mt-1">{{ form.bio.errors }}</div>
+                {% endif %}
+                <div class="field-tip">Cuéntanos un poco sobre ti y tus intereses profesionales.</div>
+            </div>
+            
+            <div class="section-divider"></div>
+            <h3 class="section-title">Experiencia Profesional</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_professional_title" class="form-label">Título profesional</label>
+                        <input type="text" name="professional_title" id="id_professional_title" class="form-control" {% if form.professional_title.value %}value="{{ form.professional_title.value }}"{% endif %}>
+                        {% if form.professional_title.errors %}
+                            <div class="text-danger mt-1">{{ form.professional_title.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="id_years_experience" class="form-label">Años de experiencia</label>
+                        <input type="number" name="years_experience" id="id_years_experience" class="form-control" min="0" {% if form.years_experience.value %}value="{{ form.years_experience.value }}"{% endif %}>
+                        {% if form.years_experience.errors %}
+                            <div class="text-danger mt-1">{{ form.years_experience.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_skills" class="form-label">Habilidades</label>
+                <input type="text" name="skills" id="id_skills" class="form-control" placeholder="Ejemplo: Python, Django, SQL, Marketing Digital" {% if form.skills.value %}value="{{ form.skills.value }}"{% endif %}>
+                {% if form.skills.errors %}
+                    <div class="text-danger mt-1">{{ form.skills.errors }}</div>
+                {% endif %}
+                <div class="field-tip">Separa las habilidades con comas.</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_education" class="form-label">Educación</label>
+                <textarea name="education" id="id_education" rows="4" class="form-control" placeholder="Ejemplo: Licenciatura en Sistemas, Universidad Nacional (2018-2022)">{% if form.education.value %}{{ form.education.value }}{% endif %}</textarea>
+                {% if form.education.errors %}
+                    <div class="text-danger mt-1">{{ form.education.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_languages" class="form-label">Idiomas</label>
+                <input type="text" name="languages" id="id_languages" class="form-control" placeholder="Ejemplo: Español (Nativo), Inglés (Avanzado)" {% if form.languages.value %}value="{{ form.languages.value }}"{% endif %}>
+                {% if form.languages.errors %}
+                    <div class="text-danger mt-1">{{ form.languages.errors }}</div>
+                {% endif %}
+                <div class="field-tip">Separa los idiomas con comas e indica tu nivel.</div>
+            </div>
+            
+            <div class="section-divider"></div>
+            <h3 class="section-title">Próximo paso: CV</h3>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Después de completar su perfil personal, será redirigido para subir su hoja de vida. Esta es un paso esencial para que los empleadores puedan encontrarlo.
+            </div>
+            
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Perfil y Continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
