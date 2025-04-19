@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Prueba de Extracción - KeyWork{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Prueba de Extracción de Texto</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Extracción de PDF</h3>
+        </div>
+        <div class="card-body">
+            {% if pdf_extraction_works %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> La extracción de PDF funciona correctamente.
+                </div>
+                <h4>Texto extraído:</h4>
+                <pre class="bg-dark text-light p-3 rounded">{{ pdf_extracted_text }}</pre>
+            {% else %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle"></i> La extracción de PDF no funciona.
+                </div>
+                {% if pdf_extracted_text %}
+                    <h4>Texto extraído:</h4>
+                    <pre class="bg-dark text-light p-3 rounded">{{ pdf_extracted_text }}</pre>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Extracción de Imagen</h3>
+        </div>
+        <div class="card-body">
+            {% if image_extraction_works %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> La extracción de imagen funciona correctamente.
+                </div>
+                <h4>Texto extraído:</h4>
+                <pre class="bg-dark text-light p-3 rounded">{{ image_extracted_text }}</pre>
+            {% else %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle"></i> La extracción de imagen no funciona.
+                </div>
+                {% if image_extracted_text %}
+                    <h4>Texto extraído:</h4>
+                    <pre class="bg-dark text-light p-3 rounded">{{ image_extracted_text }}</pre>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if errors %}
+        <div class="card">
+            <div class="card-header">
+                <h3>Errores</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <ul class="mb-0">
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'home' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Inicio
+        </a>
+    </div>
+</div>
+{% endblock %}

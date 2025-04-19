@@ -10,9 +10,19 @@ import os
 from PyPDF2 import PdfReader
 from pdf2image import convert_from_path
 
-# Configuración de Tesseract (ajusta la ruta según tu sistema)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Windows
-# En Linux/Mac, asegúrate de tener instalado `tesseract-ocr` y usa `tesseract` directamente
+# Configuración de Tesseract (usando la configuración del settings.py)
+tesseract_cmd = getattr(settings, 'TESSERACT_CMD', None)
+if tesseract_cmd:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+else:
+    # Intentar detectar automáticamente la ubicación de Tesseract
+    import shutil
+    tesseract_path = shutil.which('tesseract')
+    if tesseract_path:
+        print(f"Tesseract encontrado en: {tesseract_path}")
+        pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    else:
+        print("ADVERTENCIA: No se pudo encontrar Tesseract. La extracción OCR podría fallar.")
 
 def index(request):
     return HttpResponse("¡Bienvenido a KeyWork! 🚀")
@@ -20,24 +30,34 @@ def index(request):
 def extract_text_from_pdf(pdf_path):
     """Extrae texto de un archivo PDF. Si no hay texto embebido, usa OCR."""
     try:
+        print(f"Intentando extraer texto de: {pdf_path}")
         pdf_reader = PdfReader(pdf_path)
         extracted_text = ""
 
         # Intentar extraer texto de cada página
-        for page in pdf_reader.pages:
-            extracted_text += page.extract_text() or ""
+        for i, page in enumerate(pdf_reader.pages):
+            page_text = page.extract_text() or ""
+            extracted_text += page_text
+            print(f"Página {i+1}: Extraídos {len(page_text)} caracteres")
 
         # Si no se extrajo texto, aplicar OCR
         if not extracted_text.strip():
-            print("No text detected, applying OCR...")
-            images = convert_from_path(pdf_path)
-            for img in images:
-                extracted_text += pytesseract.image_to_string(img, lang='spa+eng')
+            print("No se detectó texto en el PDF, aplicando OCR...")
+            try:
+                images = convert_from_path(pdf_path)
+                print(f"PDF convertido a {len(images)} imágenes")
+                for i, img in enumerate(images):
+                    img_text = pytesseract.image_to_string(img, lang='spa+eng')
+                    extracted_text += img_text
+                    print(f"OCR en imagen {i+1}: Extraídos {len(img_text)} caracteres")
+            except Exception as ocr_e:
+                print(f"Error en OCR: {str(ocr_e)}")
+                return f"Error en OCR del PDF: {str(ocr_e)}"
 
         return extracted_text.strip()
     except Exception as e:
-        print(f"PDF Processing Error: {e}")
-        return "Error extracting text from PDF."
+        print(f"Error procesando PDF: {str(e)}")
+        return f"Error procesando PDF: {str(e)}"
 
 @login_required
 def upload_cv(request):
@@ -246,3 +266,62 @@ def process_ocr(request, pk):
         messages.error(request, error_msg)
 
     return redirect('cv_detail', pk=cv.pk)
+
+def test_extraction(request):
+    """Vista para probar la extracción de texto (solo para desarrollo)."""
+    if not settings.DEBUG:
+        return HttpResponse("Esta vista solo está disponible en modo DEBUG")
+    
+    context = {
+        'pdf_extraction_works': False,
+        'image_extraction_works': False,
+        'errors': []
+    }
+    
+    # Probar extracción de PDF
+    try:
+        # Crear un PDF simple para prueba
+        from reportlab.pdfgen import canvas
+        from tempfile import NamedTemporaryFile
+        
+        temp_pdf = NamedTemporaryFile(suffix='.pdf', delete=False)
+        pdf_path = temp_pdf.name
+        temp_pdf.close()
+        
+        c = canvas.Canvas(pdf_path)
+        c.drawString(100, 750, "Texto de prueba para OCR")
+        c.save()
+        
+        # Extraer texto
+        extracted_text = extract_text_from_pdf(pdf_path)
+        context['pdf_extraction_works'] = "prueba" in extracted_text.lower()
+        context['pdf_extracted_text'] = extracted_text
+    except Exception as e:
+        context['errors'].append(f"Error en PDF: {str(e)}")
+    
+    # Probar extracción de imagen
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        
+        # Crear una imagen simple para prueba
+        img = Image.new('RGB', (300, 100), color = (255, 255, 255))
+        d = ImageDraw.Draw(img)
+        d.text((10,10), "Texto de prueba para OCR en imagen", fill=(0,0,0))
+        
+        temp_img = NamedTemporaryFile(suffix='.png', delete=False)
+        img_path = temp_img.name
+        temp_img.close()
+        
+        img.save(img_path)
+        
+        # Extraer texto
+        try:
+            extracted_text = pytesseract.image_to_string(Image.open(img_path), lang='spa+eng')
+            context['image_extraction_works'] = "prueba" in extracted_text.lower()
+            context['image_extracted_text'] = extracted_text
+        except Exception as tesseract_e:
+            context['errors'].append(f"Error en Tesseract: {str(tesseract_e)}")
+    except Exception as e:
+        context['errors'].append(f"Error en imagen: {str(e)}")
+    
+    return render(request, 'test_extraction.html', context)

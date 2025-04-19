@@ -32,7 +32,7 @@ class UserProfile(models.Model):
     languages = models.CharField(max_length=200, blank=True, null=True, help_text="Idiomas separados por comas")
     
     # Relación con CV
-    cv = models.ForeignKey(CV, on_delete=models.SET_NULL, blank=True, null=True, related_name='profiles')
+    cv = models.ForeignKey('CollectionPoint.CV', on_delete=models.SET_NULL, blank=True, null=True, related_name='profiles')
     
     def __str__(self):
         return f"{self.user.username} ({self.get_user_type_display()})"
