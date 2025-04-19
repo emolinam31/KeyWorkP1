@@ -75,6 +75,22 @@
         color: var(--accent);
         opacity: 1;
     }
+    
+    .alert {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #ffc107;
+        text-align: left;
+    }
+    
+    .alert-info {
+        background-color: rgba(0, 195, 255, 0.1);
+        color: #00c3ff;
+        border-left-color: #00c3ff;
+    }
 </style>
 {% endblock %}
 
@@ -90,6 +106,18 @@
                     {{ message }}
                 </div>
             {% endfor %}
+        {% endif %}
+        
+        {% if is_required %}
+        <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle"></i> Para completar su perfil, es necesario que suba su hoja de vida.
+        </div>
+        {% endif %}
+
+        {% if has_cv %}
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle"></i> Ya tiene una hoja de vida asociada a su perfil. Si sube una nueva, reemplazará la anterior.
+        </div>
         {% endif %}
         
         <div class="row">
@@ -136,8 +164,8 @@
             </form>
         </div>
         
-        <a href="{% url 'home' %}" class="back-link">
-            <i class="fas fa-arrow-left"></i> Volver a la página principal
+        <a href="{% url 'profile' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Volver a mi Perfil
         </a>
     </div>
 </div>

@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from .models import CV
 import pytesseract
 from PIL import Image
@@ -62,6 +63,15 @@ def extract_text_from_pdf(pdf_path):
 @login_required
 def upload_cv(request):
     """Sube un CV, lo almacena y extrae texto si es PDF o imagen."""
+    # Verificar si el usuario es jobseeker
+    try:
+        if request.user.profile.user_type != 'jobseeker':
+            messages.error(request, 'Solo los buscadores de empleo pueden subir hojas de vida.')
+            return redirect('home')
+    except:
+        messages.error(request, 'Error al verificar su perfil.')
+        return redirect('home')
+        
     if request.method == 'POST':
         # Procesar el archivo subido
         if request.FILES.get('file'):
@@ -102,44 +112,39 @@ def upload_cv(request):
                     print(f"OCR Error: {e}")
                     messages.warning(request, 'CV uploaded but text extraction failed.')
 
-            # Si el usuario es un JobSeeker, asociar el CV con su perfil
-            if request.user.is_authenticated:
-                try:
-                    # Obtener el perfil del usuario
-                    profile = request.user.profile
-                    print(f"Perfil obtenido para usuario {request.user.username}, tipo: {profile.user_type}")
+            # Asociar el CV con el perfil del usuario
+            try:
+                # Obtener el perfil del usuario
+                profile = request.user.profile
+                print(f"Perfil obtenido para usuario {request.user.username}, tipo: {profile.user_type}")
+                
+                # Asociar CV con el perfil en una transacción para garantizar la consistencia
+                with transaction.atomic():
+                    print(f"Asignando CV {cv.id} a perfil {profile.id}")
+                    old_cv = profile.cv
+                    profile.cv = cv
                     
-                    if profile.user_type == 'jobseeker':
-                        # Asociar CV con el perfil en una transacción para garantizar la consistencia
-                        with transaction.atomic():
-                            print(f"Asignando CV {cv.id} a perfil {profile.id}")
-                            old_cv = profile.cv
-                            profile.cv = cv
-                            
-                            # Intentar extraer información básica del texto si existe
-                            if extracted_text:
-                                print(f"Extrayendo información del texto para el perfil")
-                                extract_and_update_profile_data(profile, extracted_text)
-                            
-                            profile.save()
-                            print(f"Perfil guardado correctamente. CV asignado: {profile.cv.id if profile.cv else None}")
-                        
-                        messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
-                        
-                        # Si el usuario tenía un CV anterior y es diferente al nuevo, registrarlo en los logs
-                        if old_cv and old_cv.id != cv.id:
-                            print(f"El usuario tenía un CV anterior (ID: {old_cv.id}) que ha sido reemplazado")
-                    else:
-                        print(f"El usuario no es jobseeker, es {profile.user_type}")
-                        messages.warning(request, 'Solo los usuarios con perfil de buscador de empleo pueden asociar un CV a su perfil.')
-                except Exception as e:
-                    import traceback
-                    print(f"Error al asociar CV al perfil: {str(e)}")
-                    print(traceback.format_exc())
-                    messages.warning(request, f'CV subido pero no se pudo asociar al perfil: {str(e)}')
+                    # Intentar extraer información básica del texto si existe
+                    if extracted_text:
+                        print(f"Extrayendo información del texto para el perfil")
+                        extract_and_update_profile_data(profile, extracted_text)
+                    
+                    profile.save()
+                    print(f"Perfil guardado correctamente. CV asignado: {profile.cv.id if profile.cv else None}")
+                
+                messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
+                
+                # Si el usuario tenía un CV anterior y es diferente al nuevo, registrarlo en los logs
+                if old_cv and old_cv.id != cv.id:
+                    print(f"El usuario tenía un CV anterior (ID: {old_cv.id}) que ha sido reemplazado")
+            except Exception as e:
+                import traceback
+                print(f"Error al asociar CV al perfil: {str(e)}")
+                print(traceback.format_exc())
+                messages.warning(request, f'CV subido pero no se pudo asociar al perfil: {str(e)}')
 
-            messages.success(request, 'CV uploaded successfully!')
-            return redirect('cv_detail', pk=cv.id)
+            messages.success(request, '¡Su hoja de vida ha sido subida exitosamente!')
+            return redirect('profile')  # Redirigir al perfil después de subir CV
         else:
             # Si se está mostrando el formulario para seleccionar tipo
             upload_type = request.POST.get('upload_type', 'document')
@@ -160,9 +165,14 @@ def upload_cv(request):
                 'title': title
             })
     else:
+        # Verificar si el usuario ya tiene un CV
+        has_cv = hasattr(request.user.profile, 'cv') and request.user.profile.cv is not None
+        
         # Mostrar opciones de tipo de archivo
         return render(request, 'upload_options.html', {
-            'title': 'Selecciona el tipo de CV que deseas subir'
+            'title': 'Subir Hoja de Vida',
+            'has_cv': has_cv,
+            'is_required': not has_cv  # Indicar si es obligatorio (no tiene CV)
         })
         
 def extract_and_update_profile_data(profile, text):
