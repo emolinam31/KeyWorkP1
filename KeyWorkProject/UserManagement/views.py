@@ -29,7 +29,7 @@ def signupaccount(request):
                         return redirect('complete_employer_profile')
                     else:
                         print(f"Usuario {user.username} registrado como jobseeker")
-                        messages.success(request, '¡Cuenta creada exitosamente! Complete su perfil de buscador de empleo.')
+                        messages.success(request, '¡Cuenta creada exitosamente! Complete su perfil personal antes de continuar.')
                         return redirect('complete_jobseeker_profile')
                 else:
                     print(f"Errores en el formulario: {form.errors}")
@@ -56,7 +56,7 @@ def signupaccount(request):
                 'form': CustomUserCreationForm(),
                 'error': 'Las contraseñas no coinciden.'
             })
-
+            
 def loginaccount(request):
     if request.method == 'GET':
         return render(request, 'user_management/login.html', {'form': AuthenticationForm()})
@@ -144,20 +144,11 @@ def complete_jobseeker_profile(request):
         return redirect('home')
     
     if request.method == 'GET':
-        # Obtener los CVs subidos por el usuario para mostrarlos en el formulario
-        user_cvs = CV.objects.all()  # Temporalmente mostramos todos los CVs
-        print(f"CVs disponibles: {list(user_cvs.values_list('id', 'upload_type'))}")
-        
         # Inicializar el formulario con el perfil del usuario
         form = JobSeekerProfileForm(instance=request.user.profile)
         
-        # Si no hay CVs disponibles, mostrar un mensaje
-        if not user_cvs.exists():
-            messages.info(request, 'No tiene CVs subidos. Puede subir uno desde la opción "Subir CV".')
-        
         return render(request, 'user_management/complete_jobseeker_profile.html', {
-            'form': form,
-            'user_cvs': user_cvs
+            'form': form
         })
     else:
         try:
@@ -167,40 +158,17 @@ def complete_jobseeker_profile(request):
                 print(f"Formulario válido, guardando perfil")
                 profile = form.save(commit=False)
                 
-                # Verificar si se seleccionó un CV
-                cv_id = request.POST.get('cv')
-                if cv_id:
-                    try:
-                        profile.cv = CV.objects.get(id=cv_id)
-                        print(f"CV seleccionado y asignado: {profile.cv}")
-                    except CV.DoesNotExist:
-                        print(f"No se encontró el CV con ID {cv_id}")
-                        messages.warning(request, f'No se encontró el CV seleccionado.')
-                
-                # Si el perfil tiene un CV asignado, podemos extraer algunas habilidades
-                if profile.cv and profile.cv.extracted_text and not profile.skills:
-                    print("Extrayendo habilidades del texto del CV")
-                    # Este es solo un ejemplo básico de extracción de habilidades
-                    common_skills = [
-                        "python", "java", "javascript", "html", "css", "django", "react", 
-                        "angular", "node.js", "sql", "marketing", "ventas", "comunicación", 
-                        "liderazgo", "excel", "word", "powerpoint", "análisis", "diseño"
-                    ]
-                    extracted_text = profile.cv.extracted_text.lower()
-                    detected_skills = []
-                    
-                    for skill in common_skills:
-                        if skill in extracted_text:
-                            detected_skills.append(skill.capitalize())
-                    
-                    if detected_skills:
-                        profile.skills = ", ".join(detected_skills)
-                        print(f"Habilidades detectadas: {profile.skills}")
-                        messages.info(request, f'Se detectaron automáticamente {len(detected_skills)} habilidades de su CV.')
-                
+                # Guardamos el perfil independientemente de si tiene CV o no
                 profile.save()
                 print("Perfil guardado correctamente")
                 messages.success(request, 'Perfil actualizado correctamente.')
+                
+                # Verificar si el usuario tiene un CV
+                if not profile.cv:
+                    print("Usuario no tiene CV, redirigiendo a subir CV")
+                    messages.info(request, 'Por favor, suba su hoja de vida para completar su perfil.')
+                    return redirect('upload_cv')
+                    
                 return redirect('profile')
             else:
                 print(f"Formulario inválido. Errores: {form.errors}")
@@ -210,6 +178,7 @@ def complete_jobseeker_profile(request):
             print(traceback.format_exc())
             messages.error(request, f'Error al guardar el perfil: {str(e)}')
             return render(request, 'user_management/complete_jobseeker_profile.html', {'form': form})
+        
 
 @login_required
 def profile_view(request):
@@ -218,11 +187,16 @@ def profile_view(request):
     try:
         profile = request.user.profile
         
-        # Verificar si el perfil está completo (para jobseeker verificamos full_name, para employer company_name)
-        if profile.user_type == 'jobseeker' and not profile.full_name:
-            print("Perfil de jobseeker incompleto, redirigiendo...")
-            messages.info(request, 'Por favor complete su perfil para continuar.')
-            return redirect('complete_jobseeker_profile')
+        # Verificar si el perfil está completo 
+        if profile.user_type == 'jobseeker':
+            if not profile.full_name:
+                print("Perfil de jobseeker incompleto, redirigiendo...")
+                messages.info(request, 'Por favor complete su perfil para continuar.')
+                return redirect('complete_jobseeker_profile')
+            elif not profile.cv:
+                print("Jobseeker sin CV, redirigiendo a subir CV...")
+                messages.info(request, 'Para completar su perfil, es necesario que suba su hoja de vida.')
+                return redirect('upload_cv')
         elif profile.user_type == 'employer' and not profile.company_name:
             print("Perfil de employer incompleto, redirigiendo...")
             messages.info(request, 'Por favor complete el perfil de su empresa para continuar.')

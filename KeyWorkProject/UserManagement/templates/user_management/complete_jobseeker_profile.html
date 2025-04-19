@@ -106,13 +106,19 @@
         color: var(--text);
     }
     
-    .cv-warning {
+    .alert {
         background-color: rgba(255, 193, 7, 0.1);
         color: #ffc107;
         padding: 1rem;
         border-radius: 8px;
         margin-top: 1rem;
         border-left: 4px solid #ffc107;
+    }
+    
+    .alert-info {
+        background-color: rgba(0, 195, 255, 0.1);
+        color: #00c3ff;
+        border-left-color: #00c3ff;
     }
 </style>
 {% endblock %}
@@ -240,29 +246,15 @@
             </div>
             
             <div class="section-divider"></div>
-            <h3 class="section-title">CV y Documentos</h3>
+            <h3 class="section-title">Próximo paso: CV</h3>
             
-            <div class="form-group">
-                <label for="id_cv" class="form-label">Seleccionar CV subido</label>
-                <select name="cv" id="id_cv" class="form-control">
-                    <option value="">---------</option>
-                    {% for cv in form.fields.cv.queryset %}
-                        <option value="{{ cv.id }}" {% if form.cv.value == cv.id %}selected{% endif %}>{{ cv }}</option>
-                    {% endfor %}
-                </select>
-                {% if form.cv.errors %}
-                    <div class="text-danger mt-1">{{ form.cv.errors }}</div>
-                {% endif %}
-                
-                <div class="cv-warning mt-3">
-                    <i class="fas fa-exclamation-triangle"></i> Si aún no has subido tu CV, 
-                    <a href="{% url 'upload_cv' %}" class="text-warning">hazlo aquí</a> antes de continuar.
-                </div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Después de completar su perfil personal, será redirigido para subir su hoja de vida. Esta es un paso esencial para que los empleadores puedan encontrarlo.
             </div>
             
             <div class="text-center mt-4">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Guardar Perfil
+                    <i class="fas fa-save"></i> Guardar Perfil y Continuar
                 </button>
             </div>
         </form>

@@ -77,8 +77,8 @@ class JobSeekerProfileForm(forms.ModelForm):
             'bio',
             'skills',
             'education',
-            'languages',
-            'cv'
+            'languages'
+            # Eliminamos 'cv' de la lista de campos
         )
         labels = {
             'full_name': 'Nombre completo',
@@ -89,8 +89,7 @@ class JobSeekerProfileForm(forms.ModelForm):
             'bio': 'Biografía',
             'skills': 'Habilidades',
             'education': 'Educación',
-            'languages': 'Idiomas',
-            'cv': 'Seleccionar CV subido'
+            'languages': 'Idiomas'
         }
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -101,23 +100,12 @@ class JobSeekerProfileForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
             'skills': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Python, Django, SQL, Marketing Digital'}),
             'education': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Ejemplo: Licenciatura en Sistemas, Universidad Nacional (2018-2022)'}),
-            'languages': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Español (Nativo), Inglés (Avanzado), Francés (Básico)'}),
-            'cv': forms.Select(attrs={'class': 'form-control'})
+            'languages': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Español (Nativo), Inglés (Avanzado), Francés (Básico)'})
         }
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        
-        # Filtrar los CVs disponibles
-        # En una versión más avanzada, deberías filtrar solo los CVs del usuario actual
-        all_cvs = CV.objects.all()
-        self.fields['cv'].queryset = all_cvs
-        self.fields['cv'].required = False
-        
-        # Añadir logging para debugging
-        import sys
-        print(f"CVs disponibles para selección: {list(all_cvs.values_list('id', 'upload_type'))}", file=sys.stderr)
         
     def clean_full_name(self):
         full_name = self.cleaned_data.get('full_name')
