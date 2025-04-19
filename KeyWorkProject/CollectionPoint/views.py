@@ -75,6 +75,7 @@ def upload_cv(request):
                 upload_type=upload_type
             )
             cv.save()
+            print(f"CV guardado con ID: {cv.id}, Tipo: {upload_type}")
 
             extracted_text = ""
 
@@ -83,6 +84,7 @@ def upload_cv(request):
                 extracted_text = extract_text_from_pdf(cv.file.path)
                 cv.extracted_text = extracted_text
                 cv.save()
+                print(f"Texto extraído y guardado para PDF")
 
             # Si es una imagen, procesar con OCR
             elif upload_type == 'image':
@@ -93,6 +95,7 @@ def upload_cv(request):
                     # Guardar el texto extraído
                     cv.extracted_text = extracted_text
                     cv.save()
+                    print(f"Texto extraído y guardado para imagen")
 
                     messages.success(request, 'Image uploaded and text extracted successfully!')
                 except Exception as e:
@@ -102,25 +105,41 @@ def upload_cv(request):
             # Si el usuario es un JobSeeker, asociar el CV con su perfil
             if request.user.is_authenticated:
                 try:
+                    # Obtener el perfil del usuario
                     profile = request.user.profile
+                    print(f"Perfil obtenido para usuario {request.user.username}, tipo: {profile.user_type}")
+                    
                     if profile.user_type == 'jobseeker':
-                        # Asociar CV con el perfil
-                        profile.cv = cv
+                        # Asociar CV con el perfil en una transacción para garantizar la consistencia
+                        with transaction.atomic():
+                            print(f"Asignando CV {cv.id} a perfil {profile.id}")
+                            old_cv = profile.cv
+                            profile.cv = cv
+                            
+                            # Intentar extraer información básica del texto si existe
+                            if extracted_text:
+                                print(f"Extrayendo información del texto para el perfil")
+                                extract_and_update_profile_data(profile, extracted_text)
+                            
+                            profile.save()
+                            print(f"Perfil guardado correctamente. CV asignado: {profile.cv.id if profile.cv else None}")
                         
-                        # Intentar extraer información básica del texto si existe
-                        if extracted_text:
-                            # Esta es una implementación básica. Aquí es donde integrarías tu modelo de IA
-                            # para extraer información más precisa
-                            extract_and_update_profile_data(profile, extracted_text)
-                        
-                        profile.save()
                         messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
+                        
+                        # Si el usuario tenía un CV anterior y es diferente al nuevo, registrarlo en los logs
+                        if old_cv and old_cv.id != cv.id:
+                            print(f"El usuario tenía un CV anterior (ID: {old_cv.id}) que ha sido reemplazado")
+                    else:
+                        print(f"El usuario no es jobseeker, es {profile.user_type}")
+                        messages.warning(request, 'Solo los usuarios con perfil de buscador de empleo pueden asociar un CV a su perfil.')
                 except Exception as e:
-                    print(f"Profile association error: {e}")
-                    messages.warning(request, 'CV uploaded but profile association failed.')
+                    import traceback
+                    print(f"Error al asociar CV al perfil: {str(e)}")
+                    print(traceback.format_exc())
+                    messages.warning(request, f'CV subido pero no se pudo asociar al perfil: {str(e)}')
 
             messages.success(request, 'CV uploaded successfully!')
-            return redirect('cv_detail', pk=cv.pk)
+            return redirect('cv_detail', pk=cv.id)
         else:
             # Si se está mostrando el formulario para seleccionar tipo
             upload_type = request.POST.get('upload_type', 'document')
@@ -145,7 +164,7 @@ def upload_cv(request):
         return render(request, 'upload_options.html', {
             'title': 'Selecciona el tipo de CV que deseas subir'
         })
-
+        
 def extract_and_update_profile_data(profile, text):
     """
     Extrae información del texto del CV y actualiza el perfil del usuario.

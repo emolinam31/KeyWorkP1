@@ -45,11 +45,22 @@ class EmployerProfileForm(forms.ModelForm):
             'industry': 'Industria',
             'company_size': 'Tamaño de la empresa'
         }
+        widgets = {
+            'company_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'industry': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Tecnología, Salud, Educación'}),
+            'company_size': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 1-10, 11-50, 51-200'})
+        }
+        
+    def clean_company_name(self):
+        company_name = self.cleaned_data.get('company_name')
+        if not company_name:
+            raise forms.ValidationError("Por favor, ingrese el nombre de su empresa.")
+        return company_name
 
 
 class JobSeekerProfileForm(forms.ModelForm):
     date_of_birth = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         required=False,
         label='Fecha de nacimiento'
     )
@@ -82,10 +93,16 @@ class JobSeekerProfileForm(forms.ModelForm):
             'cv': 'Seleccionar CV subido'
         }
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 4}),
-            'skills': forms.TextInput(attrs={'placeholder': 'Ejemplo: Python, Django, SQL, Marketing Digital'}),
-            'education': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Ejemplo: Licenciatura en Sistemas, Universidad Nacional (2018-2022)'}),
-            'languages': forms.TextInput(attrs={'placeholder': 'Ejemplo: Español (Nativo), Inglés (Avanzado), Francés (Básico)'})
+            'full_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'professional_title': forms.TextInput(attrs={'class': 'form-control'}),
+            'years_experience': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'bio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'skills': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Python, Django, SQL, Marketing Digital'}),
+            'education': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Ejemplo: Licenciatura en Sistemas, Universidad Nacional (2018-2022)'}),
+            'languages': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Español (Nativo), Inglés (Avanzado), Francés (Básico)'}),
+            'cv': forms.Select(attrs={'class': 'form-control'})
         }
     
     def __init__(self, *args, **kwargs):
@@ -93,5 +110,17 @@ class JobSeekerProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         # Filtrar los CVs disponibles
-        self.fields['cv'].queryset = CV.objects.all()
+        # En una versión más avanzada, deberías filtrar solo los CVs del usuario actual
+        all_cvs = CV.objects.all()
+        self.fields['cv'].queryset = all_cvs
         self.fields['cv'].required = False
+        
+        # Añadir logging para debugging
+        import sys
+        print(f"CVs disponibles para selección: {list(all_cvs.values_list('id', 'upload_type'))}", file=sys.stderr)
+        
+    def clean_full_name(self):
+        full_name = self.cleaned_data.get('full_name')
+        if not full_name:
+            raise forms.ValidationError("Por favor, ingrese su nombre completo.")
+        return full_name
