@@ -130,6 +130,7 @@ def complete_employer_profile(request):
             messages.error(request, f'Error al guardar el perfil: {str(e)}')
             return render(request, 'user_management/complete_employer_profile.html', {'form': form})
 
+
 @login_required
 def complete_jobseeker_profile(request):
     # Verificar que el usuario sea de tipo buscador de empleo
@@ -158,18 +159,16 @@ def complete_jobseeker_profile(request):
                 print(f"Formulario válido, guardando perfil")
                 profile = form.save(commit=False)
                 
-                # Guardamos el perfil independientemente de si tiene CV o no
+                # Marcar el perfil como completado
+                profile.profile_completed = True
+                
+                # Guardamos el perfil
                 profile.save()
                 print("Perfil guardado correctamente")
                 messages.success(request, 'Perfil actualizado correctamente.')
                 
-                # Verificar si el usuario tiene un CV
-                if not profile.cv:
-                    print("Usuario no tiene CV, redirigiendo a subir CV")
-                    messages.info(request, 'Por favor, suba su hoja de vida para completar su perfil.')
-                    return redirect('upload_cv')
-                    
-                return redirect('profile')
+                # Redirigir a la página de subida de CV
+                return redirect('upload_cv')
             else:
                 print(f"Formulario inválido. Errores: {form.errors}")
                 return render(request, 'user_management/complete_jobseeker_profile.html', {'form': form})
@@ -193,10 +192,8 @@ def profile_view(request):
                 print("Perfil de jobseeker incompleto, redirigiendo...")
                 messages.info(request, 'Por favor complete su perfil para continuar.')
                 return redirect('complete_jobseeker_profile')
-            elif not profile.cv:
-                print("Jobseeker sin CV, redirigiendo a subir CV...")
-                messages.info(request, 'Para completar su perfil, es necesario que suba su hoja de vida.')
-                return redirect('upload_cv')
+            # No redirigimos aquí si no hay CV, solo mostramos un mensaje en la página
+            
         elif profile.user_type == 'employer' and not profile.company_name:
             print("Perfil de employer incompleto, redirigiendo...")
             messages.info(request, 'Por favor complete el perfil de su empresa para continuar.')
@@ -209,3 +206,5 @@ def profile_view(request):
         print(f"Usuario {request.user.username} no tiene perfil")
         messages.error(request, 'No tiene un perfil configurado.')
         return redirect('home')
+    
+   

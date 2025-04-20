@@ -73,78 +73,91 @@ def upload_cv(request):
         return redirect('home')
         
     if request.method == 'POST':
-        # Procesar el archivo subido
+        # Si hay un archivo enviado, procesarlo
         if request.FILES.get('file'):
-            # Si hay un archivo, procesarlo
+            # Procesar el archivo subido
             upload_type = request.POST.get('upload_type', 'document')
             uploaded_file = request.FILES['file']
 
+            # Validar tipo de archivo
+            if upload_type == 'document' and not uploaded_file.name.lower().endswith('.pdf'):
+                messages.error(request, 'Para documentos, solo se aceptan archivos PDF.')
+                return redirect('upload_cv')
+            elif upload_type == 'image' and not any(uploaded_file.name.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png']):
+                messages.error(request, 'Para imágenes, solo se aceptan archivos JPG o PNG.')
+                return redirect('upload_cv')
+
             # Guardar en el modelo
-            cv = CV(
-                file=uploaded_file,
-                upload_type=upload_type
-            )
-            cv.save()
-            print(f"CV guardado con ID: {cv.id}, Tipo: {upload_type}")
-
-            extracted_text = ""
-
-            # Si es un documento PDF, extraer texto con PyPDF2 y OCR si es necesario
-            if upload_type == 'document' and uploaded_file.name.endswith(".pdf"):
-                extracted_text = extract_text_from_pdf(cv.file.path)
-                cv.extracted_text = extracted_text
+            try:
+                cv = CV(
+                    file=uploaded_file,
+                    upload_type=upload_type
+                )
                 cv.save()
-                print(f"Texto extraído y guardado para PDF")
+                print(f"CV guardado con ID: {cv.id}, Tipo: {upload_type}")
 
-            # Si es una imagen, procesar con OCR
-            elif upload_type == 'image':
-                try:
-                    img = Image.open(cv.file.path)
-                    extracted_text = pytesseract.image_to_string(img, lang='spa+eng')
+                extracted_text = ""
 
-                    # Guardar el texto extraído
+                # Si es un documento PDF, extraer texto con PyPDF2 y OCR si es necesario
+                if upload_type == 'document' and uploaded_file.name.endswith(".pdf"):
+                    extracted_text = extract_text_from_pdf(cv.file.path)
                     cv.extracted_text = extracted_text
                     cv.save()
-                    print(f"Texto extraído y guardado para imagen")
+                    print(f"Texto extraído y guardado para PDF")
 
-                    messages.success(request, 'Image uploaded and text extracted successfully!')
+                # Si es una imagen, procesar con OCR
+                elif upload_type == 'image':
+                    try:
+                        img = Image.open(cv.file.path)
+                        extracted_text = pytesseract.image_to_string(img, lang='spa+eng')
+
+                        # Guardar el texto extraído
+                        cv.extracted_text = extracted_text
+                        cv.save()
+                        print(f"Texto extraído y guardado para imagen")
+
+                        messages.success(request, '¡Imagen subida y texto extraído correctamente!')
+                    except Exception as e:
+                        print(f"OCR Error: {e}")
+                        messages.warning(request, 'CV subido pero la extracción de texto falló.')
+
+                # Asociar el CV con el perfil del usuario
+                try:
+                    # Obtener el perfil del usuario
+                    profile = request.user.profile
+                    print(f"Perfil obtenido para usuario {request.user.username}, tipo: {profile.user_type}")
+                    
+                    # Asociar CV con el perfil en una transacción para garantizar la consistencia
+                    with transaction.atomic():
+                        print(f"Asignando CV {cv.id} a perfil {profile.id}")
+                        old_cv = profile.cv
+                        profile.cv = cv
+                        profile.has_cv = True  # Marcar que el usuario tiene CV
+                        
+                        # Intentar extraer información básica del texto si existe
+                        if extracted_text:
+                            print(f"Extrayendo información del texto para el perfil")
+                            extract_and_update_profile_data(profile, extracted_text)
+                        
+                        profile.save()
+                        print(f"Perfil guardado correctamente. CV asignado: {profile.cv.id if profile.cv else None}")
+                    
+                    messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
+                    
+                    # Si el usuario tenía un CV anterior y es diferente al nuevo, registrarlo en los logs
+                    if old_cv and old_cv.id != cv.id:
+                        print(f"El usuario tenía un CV anterior (ID: {old_cv.id}) que ha sido reemplazado")
                 except Exception as e:
-                    print(f"OCR Error: {e}")
-                    messages.warning(request, 'CV uploaded but text extraction failed.')
+                    import traceback
+                    print(f"Error al asociar CV al perfil: {str(e)}")
+                    print(traceback.format_exc())
+                    messages.warning(request, f'CV subido pero no se pudo asociar al perfil: {str(e)}')
 
-            # Asociar el CV con el perfil del usuario
-            try:
-                # Obtener el perfil del usuario
-                profile = request.user.profile
-                print(f"Perfil obtenido para usuario {request.user.username}, tipo: {profile.user_type}")
-                
-                # Asociar CV con el perfil en una transacción para garantizar la consistencia
-                with transaction.atomic():
-                    print(f"Asignando CV {cv.id} a perfil {profile.id}")
-                    old_cv = profile.cv
-                    profile.cv = cv
-                    
-                    # Intentar extraer información básica del texto si existe
-                    if extracted_text:
-                        print(f"Extrayendo información del texto para el perfil")
-                        extract_and_update_profile_data(profile, extracted_text)
-                    
-                    profile.save()
-                    print(f"Perfil guardado correctamente. CV asignado: {profile.cv.id if profile.cv else None}")
-                
-                messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
-                
-                # Si el usuario tenía un CV anterior y es diferente al nuevo, registrarlo en los logs
-                if old_cv and old_cv.id != cv.id:
-                    print(f"El usuario tenía un CV anterior (ID: {old_cv.id}) que ha sido reemplazado")
+                return redirect('profile')  # Redirigir al perfil después de subir CV
             except Exception as e:
-                import traceback
-                print(f"Error al asociar CV al perfil: {str(e)}")
-                print(traceback.format_exc())
-                messages.warning(request, f'CV subido pero no se pudo asociar al perfil: {str(e)}')
-
-            messages.success(request, '¡Su hoja de vida ha sido subida exitosamente!')
-            return redirect('profile')  # Redirigir al perfil después de subir CV
+                print(f"Error al guardar el CV: {str(e)}")
+                messages.error(request, f'Error al procesar el archivo: {str(e)}')
+                return redirect('upload_cv')
         else:
             # Si se está mostrando el formulario para seleccionar tipo
             upload_type = request.POST.get('upload_type', 'document')
@@ -174,6 +187,7 @@ def upload_cv(request):
             'has_cv': has_cv,
             'is_required': not has_cv  # Indicar si es obligatorio (no tiene CV)
         })
+
         
 def extract_and_update_profile_data(profile, text):
     """

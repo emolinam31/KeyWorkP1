@@ -58,6 +58,7 @@ class EmployerProfileForm(forms.ModelForm):
         return company_name
 
 
+
 class JobSeekerProfileForm(forms.ModelForm):
     date_of_birth = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -77,8 +78,10 @@ class JobSeekerProfileForm(forms.ModelForm):
             'bio',
             'skills',
             'education',
-            'languages'
-            # Eliminamos 'cv' de la lista de campos
+            'languages',
+            'availability',
+            'desired_salary',
+            'remote_work',
         )
         labels = {
             'full_name': 'Nombre completo',
@@ -89,7 +92,10 @@ class JobSeekerProfileForm(forms.ModelForm):
             'bio': 'Biografía',
             'skills': 'Habilidades',
             'education': 'Educación',
-            'languages': 'Idiomas'
+            'languages': 'Idiomas',
+            'availability': 'Disponibilidad',
+            'desired_salary': 'Salario deseado',
+            'remote_work': 'Disponible para trabajo remoto',
         }
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -100,13 +106,16 @@ class JobSeekerProfileForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
             'skills': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Python, Django, SQL, Marketing Digital'}),
             'education': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Ejemplo: Licenciatura en Sistemas, Universidad Nacional (2018-2022)'}),
-            'languages': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Español (Nativo), Inglés (Avanzado), Francés (Básico)'})
+            'languages': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: Español (Nativo), Inglés (Avanzado), Francés (Básico)'}),
+            'availability': forms.Select(attrs={'class': 'form-control'}),
+            'desired_salary': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '100000', 'placeholder': '2000000'}),
+            'remote_work': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        
+    
     def clean_full_name(self):
         full_name = self.cleaned_data.get('full_name')
         if not full_name:
