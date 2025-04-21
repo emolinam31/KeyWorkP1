@@ -113,6 +113,60 @@
         gap: 15px;
         margin-top: 20px;
     }
+    
+    /* Nuevos estilos para los botones de CV */
+    .cv-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .view-cv-button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .view-cv-button:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .update-cv-button {
+        background-color: #f39c12;
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .update-cv-button:hover {
+        background-color: #e67e22;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .button-icon {
+        margin-right: 8px;
+    }
 </style>
 {% endblock %}
 
@@ -143,8 +197,13 @@
             </div>
             
             {% if user.profile.cv %}
-                <div class="user-message">
-                    <p>Ya has subido tu CV. <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="auth-link">Ver detalles</a></p>
+                <div class="cv-buttons">
+                    <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="view-cv-button">
+                        <i class="fas fa-file-alt button-icon"></i> Ver mi CV Actual
+                    </a>
+                    <a href="{% url 'upload_cv' %}" class="update-cv-button">
+                        <i class="fas fa-sync-alt button-icon"></i> Actualizar CV
+                    </a>
                 </div>
             {% endif %}
         {% endif %}

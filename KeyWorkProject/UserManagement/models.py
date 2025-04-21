@@ -29,6 +29,10 @@ class UserProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Campos para el seguimiento del estado
+    profile_completed = models.BooleanField(default=False)
+    has_cv = models.BooleanField(default=False)
+    
     # Campos para empleadores
     company_name = models.CharField(max_length=100, blank=True, null=True)
     industry = models.CharField(max_length=100, blank=True, null=True)
@@ -46,6 +50,8 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=150, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
+    
+    # Campos adicionales para buscadores de empleo (faltaban en el modelo original)
     availability = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES, blank=True, null=True)
     desired_salary = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     remote_work = models.BooleanField(default=False, verbose_name="Disponible para trabajo remoto")
@@ -61,6 +67,11 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = "Perfil de Usuario"
         verbose_name_plural = "Perfiles de Usuario"
+        indexes = [
+            models.Index(fields=['user_type']),
+            models.Index(fields=['profile_completed']),
+            models.Index(fields=['has_cv']),
+        ]
     
     def __str__(self):
         if self.user_type == 'employer' and self.company_name:

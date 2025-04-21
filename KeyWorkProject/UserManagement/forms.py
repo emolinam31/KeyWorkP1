@@ -1,5 +1,3 @@
-# UserManagement/forms.py (Actualizado para incluir nuevos campos)
-
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -36,35 +34,21 @@ class CustomUserCreationForm(UserCreationForm):
                 user_type=user_type
             )
         return user
-    
+
+
 class EmployerProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = (
-            'company_name', 
-            'industry', 
-            'company_size',
-            'company_website',
-            'company_description',
-            'company_logo',
-            'company_location'
-        )
+        fields = ('company_name', 'industry', 'company_size')
         labels = {
             'company_name': 'Nombre de la empresa',
             'industry': 'Industria',
-            'company_size': 'Tamaño de la empresa',
-            'company_website': 'Sitio web',
-            'company_description': 'Descripción de la empresa',
-            'company_logo': 'Logo de la empresa',
-            'company_location': 'Ubicación de la empresa'
+            'company_size': 'Tamaño de la empresa'
         }
         widgets = {
             'company_name': forms.TextInput(attrs={'class': 'form-control'}),
             'industry': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Tecnología, Salud, Educación'}),
-            'company_size': forms.Select(attrs={'class': 'form-control'}),
-            'company_website': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://www.ejemplo.com'}),
-            'company_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'company_location': forms.TextInput(attrs={'class': 'form-control'})
+            'company_size': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 1-10, 11-50, 51-200'})
         }
         
     def clean_company_name(self):
@@ -72,6 +56,7 @@ class EmployerProfileForm(forms.ModelForm):
         if not company_name:
             raise forms.ValidationError("Por favor, ingrese el nombre de su empresa.")
         return company_name
+
 
 
 class JobSeekerProfileForm(forms.ModelForm):
@@ -97,7 +82,6 @@ class JobSeekerProfileForm(forms.ModelForm):
             'availability',
             'desired_salary',
             'remote_work',
-            'cv'  # Mantenemos el campo cv en el formulario
         )
         labels = {
             'full_name': 'Nombre completo',
@@ -112,7 +96,6 @@ class JobSeekerProfileForm(forms.ModelForm):
             'availability': 'Disponibilidad',
             'desired_salary': 'Salario deseado',
             'remote_work': 'Disponible para trabajo remoto',
-            'cv': 'Seleccionar CV subido'
         }
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -127,18 +110,12 @@ class JobSeekerProfileForm(forms.ModelForm):
             'availability': forms.Select(attrs={'class': 'form-control'}),
             'desired_salary': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '100000', 'placeholder': '2000000'}),
             'remote_work': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'cv': forms.Select(attrs={'class': 'form-control'})
         }
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        
-        # Filtrar los CVs disponibles
-        from CollectionPoint.models import CV
-        self.fields['cv'].queryset = CV.objects.all()
-        self.fields['cv'].required = False
-        
+    
     def clean_full_name(self):
         full_name = self.cleaned_data.get('full_name')
         if not full_name:
