@@ -1,33 +1,14 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib import messages
+# EmployerPortal/urls.py
+from django.urls import path
+from . import views
 
-def employer_portal(request):
-    """Vista principal del portal del empleador"""
-    return render(request, 'employerpage.html')
-
-def upload_vacancy(request):
-    """Vista para subir una nueva vacante"""
-    # Esta es una vista temporal. Aquí implementarás el formulario de creación de vacantes
-    if request.method == 'POST':
-        # Procesar el formulario cuando lo implementes
-        messages.success(request, "¡Vacante creada exitosamente!")
-        return redirect('employer_portal')
-    
-    # Por ahora, solo muestra un mensaje temporal
-    return HttpResponse("Página para subir una nueva vacante - En construcción")
-
-def find_candidate(request):
-    """Vista para buscar candidatos"""
-    # Esta es una vista temporal. Aquí implementarás la búsqueda con algoritmo de similitud de coseno
-    return HttpResponse("Página para buscar candidatos - En construcción")
-
-def notify_candidate(request):
-    """Vista para notificar a un candidato"""
-    # Esta es una vista temporal.
-    return HttpResponse("Página para notificar candidatos - En construcción")
-
-def vacancy_detail(request, vacancy_id):
-    """Vista para ver detalles de una vacante"""
-    # Esta es una vista temporal. Aquí mostrarás los detalles de la vacante con el ID proporcionado
-    return HttpResponse(f"Detalles de la vacante {vacancy_id} - En construcción")
+urlpatterns = [
+    path('', views.employer_dashboard, name='employer_dashboard'),
+    path('create-job/', views.create_job_offer, name='create_job_offer'),
+    path('edit-draft/<int:draft_id>/', views.edit_job_draft, name='edit_job_draft'),
+    path('job/<int:job_id>/', views.view_job_offer, name='view_job_offer'),
+    path('find-candidates/', views.find_candidates, name='find_candidates'),
+    path('contact-candidate/<int:match_id>/', views.contact_candidate, name='contact_candidate'),
+    path('applications/', views.view_applications, name='view_applications'),
+    path('application/<int:application_id>/update/', views.update_application, name='update_application'),
+]

@@ -59,7 +59,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [BASE_DIR / 'KeyWork/templates'],
-        'APP_DIRS': True,
+        'APP_DIRS': True,  # Esto debe ser True para que busque plantillas en las carpetas de apps
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
