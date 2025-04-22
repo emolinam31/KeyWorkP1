@@ -125,3 +125,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # TESSERACT_CMD = '/usr/bin/tesseract'  # Linux
 TESSERACT_CMD = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'  # Windows
 # TESSERACT_CMD = '/usr/local/bin/tesseract'  # macOS
+
+# settings.py
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Configuración del login
+LOGIN_URL = '/user/login/'
+LOGIN_REDIRECT_URL = 'home'

@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}Ofertas de Empleo - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-listings-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .filter-bar {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .notifications-badge {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .badge-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+    }
+    
+    .job-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .job-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .job-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .job-header {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(26, 188, 156, 0.3));
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .job-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .company-name {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .job-info {
+        padding: 1.5rem;
+        flex: 1;
+    }
+    
+    .job-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .job-meta-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    
+    .job-meta-item i {
+        margin-right: 0.5rem;
+        color: #00c3ff;
+    }
+    
+    .job-description {
+        margin-bottom: 1.5rem;
+        opacity: 0.9;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .job-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .job-tag {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border-radius: 50px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .job-actions {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .btn-view {
+        background: linear-gradient(45deg, #3498db, #00c3ff);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    
+    .btn-view:hover {
+        background: linear-gradient(45deg, #00c3ff, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .applied-badge {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .applied-badge i {
+        margin-right: 0.5rem;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    
+    .page-link:hover, .page-link.active {
+        background-color: rgba(52, 152, 219, 0.5);
+        border-color: rgba(52, 152, 219, 0.7);
+    }
+    
+    .no-jobs-message {
+        text-align: center;
+        padding: 3rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+    }
+    
+    .no-jobs-message i {
+        font-size: 3rem;
+        color: #00c3ff;
+        margin-bottom: 1rem;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="job-listings-container">
+    <div class="filter-bar">
+        <div class="search-filter">
+            <form action="" method="get" class="d-flex">
+                <input type="text" name="search" placeholder="Buscar ofertas..." class="form-control" value="{{ request.GET.search|default:'' }}">
+                <button type="submit" class="btn btn-primary ms-2">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+        
+        <div class="notifications">
+            <a href="{% url 'notifications' %}" class="btn btn-dark notifications-badge">
+                <i class="fas fa-bell"></i>
+                {% if unread_notifications_count > 0 %}
+                <span class="badge-count">{{ unread_notifications_count }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <h1 class="mb-4">Ofertas de Empleo Disponibles</h1>
+    
+    {% if jobs %}
+        <div class="job-grid">
+            {% for job in jobs %}
+                <div class="job-card">
+                    <div class="job-header">
+                        <h2 class="job-title">{{ job.title }}</h2>
+                        <div class="company-name">{{ job.company }}</div>
+                    </div>
+                    
+                    <div class="job-info">
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="fas fa-map-marker-alt"></i> {{ job.location }}
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="fas fa-clock"></i> {{ job.get_job_type_display }}
+                            </div>
+                            {% if job.remote %}
+                            <div class="job-meta-item">
+                                <i class="fas fa-laptop-house"></i> Remoto
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="job-description">
+                            {{ job.description|truncatewords:25 }}
+                        </div>
+                        
+                        <div class="job-tags">
+                            <span class="job-tag">{{ job.get_job_type_display }}</span>
+                            {% if job.remote %}
+                                <span class="job-tag">Remoto</span>
+                            {% endif %}
+                            {% if job.salary_range %}
+                                <span class="job-tag">{{ job.salary_range }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="job-actions">
+                        <a href="{% url 'job_detail' job.id %}" class="btn-view">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </a>
+                        
+                        {% if job.id in user_applications %}
+                            <div class="applied-badge">
+                                <i class="fas fa-check-circle"></i> Aplicado
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="pagination mt-4">
+            <a href="#" class="page-link"><i class="fas fa-chevron-left"></i></a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link"><i class="fas fa-chevron-right"></i></a>
+        </div>
+    {% else %}
+        <div class="no-jobs-message">
+            <i class="fas fa-search"></i>
+            <h3>No se encontraron ofertas de empleo</h3>
+            <p>No hay ofertas de empleo disponibles en este momento. Vuelve a consultar más tarde.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

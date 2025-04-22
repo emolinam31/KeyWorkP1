@@ -115,31 +115,17 @@
         </div>
         {% endif %}
         
-        <form method="POST">
+        <form method="POST" action="{% url 'login' %}">
             {% csrf_token %}
             
             <div class="form-group">
                 <label for="id_username" class="form-label">Nombre de usuario</label>
-                <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" class="form-control">
-                {% if form.username.errors %}
-                <div class="text-danger mt-1">
-                    {% for error in form.username.errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
-                {% endif %}
+                <input type="text" name="username" value="" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" class="form-control">
             </div>
             
             <div class="form-group">
                 <label for="id_password" class="form-label">Contraseña</label>
                 <input type="password" name="password" autocomplete="current-password" required id="id_password" class="form-control">
-                {% if form.password.errors %}
-                <div class="text-danger mt-1">
-                    {% for error in form.password.errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
             
             <button type="submit" class="btn btn-primary">

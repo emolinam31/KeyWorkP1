@@ -141,8 +141,8 @@
     }
     
     .extracted-text {
-        white-space: normal; /* Cambiado de pre-wrap a normal */
-        font-family: 'Segoe UI', Arial, sans-serif; /* Cambiado de monospace a una fuente más legible */
+        white-space: normal;
+        font-family: 'Segoe UI', Arial, sans-serif;
         line-height: 1.6;
         color: #e0e0e0;
         text-align: left;
@@ -218,6 +218,18 @@
         color: white;
     }
     
+    .btn-danger {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
     .alert {
         background-color: rgba(0, 0, 0, 0.2);
         color: white;
@@ -281,11 +293,101 @@
     .cv-field-value {
         color: #e0e0e0;
     }
+    
+    /* Estilo para la barra de acciones */
+    .actions-bar {
+        background-color: #2C3E50;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .actions-title {
+        color: white;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .actions-title i {
+        margin-right: 10px;
+    }
+    
+    .action-btn {
+        display: flex;
+        align-items: center;
+        border-radius: 30px;
+        padding: 10px 20px;
+        text-decoration: none;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn i {
+        margin-right: 8px;
+    }
+    
+    .btn-gray {
+        background-color: #4a5568;
+        color: white;
+    }
+    
+    .btn-blue {
+        background-color: #38b2f8;
+        color: white;
+    }
+    
+    .btn-green {
+        background-color: #4ade80;
+        color: white;
+    }
+    
+    .btn-red {
+        background-color: #ef4444;
+        color: white;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="cv-container">
+    <!-- Nueva barra de acciones -->
+    <div class="actions-bar">
+        <h3 class="actions-title">
+            <i class="fas fa-cogs"></i> Acciones
+        </h3>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <a href="{% url 'home' %}" class="action-btn btn-gray">
+                <i class="fas fa-arrow-left"></i> Volver a Inicio
+            </a>
+            
+            <a href="{% url 'profile' %}" class="action-btn btn-gray">
+                <i class="fas fa-user"></i> Ir a mi Perfil
+            </a>
+            
+            <a href="{% url 'upload_cv' %}" class="action-btn btn-blue">
+                <i class="fas fa-sync-alt"></i> Actualizar CV
+            </a>
+            
+            <a href="{% url 'cv_detail' cv.pk %}?action=correct" class="action-btn btn-green">
+                <i class="fas fa-spell-check"></i> Corregir mi CV
+            </a>
+            
+            <a href="{% url 'cv_detail' cv.pk %}?action=delete" class="action-btn btn-red">
+                <i class="fas fa-trash"></i> Eliminar CV
+            </a>
+        </div>
+    </div>
+
     {% if messages %}
         {% for message in messages %}
             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
@@ -320,40 +422,8 @@
         <div class="wave-divider"></div>
         
         <div class="cv-body">
-            {% if cv.upload_type == 'image' %}
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="cv-section">
-                            <h3 class="cv-section-title"><i class="fas fa-image"></i> Imagen Original</h3>
-                            <div class="preview-container">
-                                <div class="image-container">
-                                    <img src="{{ cv.file.url }}" alt="CV Image">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="cv-section">
-                            <h3 class="cv-section-title"><i class="fas fa-align-left"></i> Texto Extraído</h3>
-                            
-                            {% if cv.extracted_text %}
-                                <div class="extracted-text-container">
-                                    <div class="extracted-text">{{ cv.extracted_text }}</div>
-                                </div>
-                            {% else %}
-                                <div class="no-text-alert">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <p>No se ha extraído texto de esta imagen.</p>
-                                    <a href="{% url 'process_ocr' cv.pk %}" class="btn btn-action btn-warning mt-3">
-                                        <i class="fas fa-magic"></i> Procesar con OCR
-                                    </a>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% elif cv.upload_type == 'document' %}
-                <!-- Documento PDF: Se ha quitado la sección de visualización del PDF -->
+            {% if cv.upload_type == 'document' %}
+                <!-- Documento PDF -->
                 <div class="cv-section">
                     <h3 class="cv-section-title"><i class="fas fa-align-left"></i> Texto Extraído</h3>
                     
@@ -369,39 +439,6 @@
                     {% endif %}
                 </div>
             {% endif %}
-            
-            <div class="cv-section">
-                <h3 class="cv-section-title"><i class="fas fa-cogs"></i> Acciones</h3>
-                
-                <div class="action-buttons">
-                    <a href="{% url 'home' %}" class="btn btn-action btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Volver a Inicio
-                    </a>
-                    
-                    <a href="{% url 'profile' %}" class="btn btn-action btn-secondary">
-                        <i class="fas fa-user"></i> Ir a mi Perfil
-                    </a>
-                    
-                    <a href="{% url 'upload_cv' %}" class="btn btn-action btn-primary">
-                        <i class="fas fa-sync-alt"></i> Actualizar CV
-                    </a>
-                    
-                    <!-- Nuevo botón para corregir CV -->
-                    <a href="#" class="btn btn-action btn-success" data-bs-toggle="modal" data-bs-target="#correctModal">
-                        <i class="fas fa-spell-check"></i> Corregir mi CV
-                    </a>
-                    
-                    {% if cv.upload_type == 'image' and cv.extracted_text %}
-                        <a href="{% url 'process_ocr' cv.pk %}" class="btn btn-action btn-warning">
-                            <i class="fas fa-redo"></i> Reprocesar OCR
-                        </a>
-                    {% endif %}
-                    
-                    <button type="button" class="btn btn-action btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                        <i class="fas fa-trash"></i> Eliminar CV
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -422,9 +459,13 @@
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <a href="{% url 'delete_cv' cv.pk %}" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Sí, Eliminar
-                </a>
+                <form method="post" action="{% url 'cv_detail' cv.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_cv">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Sí, Eliminar
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -443,12 +484,13 @@
                     <i class="fas fa-info-circle"></i> Corrige el texto extraído de tu CV para mejorar errores de extracción u ortografía.
                 </div>
                 
-                <form id="correctCVForm" method="post" action="#">
+                <form id="correctCVForm" method="post" action="{% url 'cv_detail' cv.pk %}">
                     {% csrf_token %}
                     <div class="form-group mb-3">
                         <label for="correctedText" class="form-label">Texto corregido:</label>
                         <textarea id="correctedText" name="corrected_text" class="form-control bg-dark text-light" rows="15" style="font-family: 'Segoe UI', Arial, sans-serif;">{{ cv.extracted_text }}</textarea>
                     </div>
+                    <input type="hidden" name="action" value="correct_text">
                 </form>
             </div>
             <div class="modal-footer border-0">
@@ -460,28 +502,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-// JavaScript para formatear el texto extraído y quitar saltos de línea innecesarios
-document.addEventListener('DOMContentLoaded', function() {
-    // Formatear el texto extraído
-    const extractedText = document.querySelector('.extracted-text');
-    if (extractedText) {
-        // Reemplazamos múltiples espacios o saltos de línea con un solo espacio
-        let text = extractedText.innerHTML;
-        text = text.replace(/\n\s*\n/g, ' '); // Reemplazar múltiples saltos de línea con un espacio
-        extractedText.innerHTML = text;
-    }
-    
-    // También formatear el texto en el modal de corrección
-    const textArea = document.getElementById('correctedText');
-    if (textArea) {
-        let text = textArea.value;
-        text = text.replace(/\n\s*\n/g, ' '); // Reemplazar múltiples saltos de línea con un espacio
-        textArea.value = text;
-    }
-});
-</script>
 {% endblock %}
