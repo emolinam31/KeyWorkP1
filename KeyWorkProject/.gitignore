@@ -2,3 +2,4 @@
 api_keys.env
 *.env
 .env
+openAI.env
