@@ -17,6 +17,7 @@ urlpatterns = [
     path('collection/', include('CollectionPoint.urls')),  # URLs para la subida y procesamiento de CVs
     path('employer/', include('EmployerPortal.urls')),  # URLs para el portal de empleadores
     path('user/', include('UserManagement.urls')),  # URLs para la gestión de usuarios
+    path('jobseeker/', include('JobSeekerPortal.urls')),
     # path('job-seeker/', include('JobSeekerPortal.urls')),  # URLs para el portal de quien busca empleo (comentado hasta implementar)
 ]
 
