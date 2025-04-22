@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Oferta - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .delete-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        padding: 2rem;
+    }
+    
+    .delete-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .delete-title {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        color: #e74c3c;
+    }
+    
+    .alert-warning {
+        background-color: rgba(231, 76, 60, 0.1);
+        border-left: 4px solid #e74c3c;
+        color: #fff;
+        padding: 1rem 1.5rem;
+    }
+    
+    .job-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-details {
+        margin-top: 1.5rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+    
+    .btn-cancel {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-cancel:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .btn-delete {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-delete:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="delete-header">
+            <h1 class="delete-title">Eliminar Oferta de Trabajo</h1>
+        </div>
+        
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> 
+            Esta acción eliminará permanentemente la oferta de trabajo y no puede ser revertida.
+        </div>
+        
+        <div class="job-details">
+            <div class="job-title">{{ job.title }}</div>
+            <div>Empresa: {{ job.company }}</div>
+            <div>Ubicación: {{ job.location }}</div>
+            <div>Tipo: {{ job.get_job_type_display }}</div>
+            <div>Publicada: {{ job.created_at|date:"d/m/Y" }}</div>
+        </div>
+        
+        <p>¿Está seguro que desea eliminar esta oferta de trabajo?</p>
+        
+        <div class="action-buttons">
+            <a href="{% url 'view_job_offer' job.id %}" class="btn btn-cancel">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+            
+            <form method="post" action="{% url 'delete_job_offer' job.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-delete">
+                    <i class="fas fa-trash"></i> Sí, Eliminar Oferta
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

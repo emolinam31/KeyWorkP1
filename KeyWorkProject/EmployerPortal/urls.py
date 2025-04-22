@@ -10,6 +10,9 @@ urlpatterns = [
     path('contact-candidate/<int:candidate_id>/', views.contact_candidate, name='contact_candidate'),
     path('applications/', views.view_applications, name='view_applications'),
     path('application/<int:application_id>/update/', views.update_application, name='update_application'),
+    path('job/<int:job_id>/edit/', views.edit_job_offer, name='edit_job_offer'),
+    path('job/<int:job_id>/delete/', views.delete_job_offer, name='delete_job_offer'),
+    path('job/<int:job_id>/toggle-status/', views.toggle_job_status, name='toggle_job_status'),
     # Ruta para implementar ATS en el futuro
     path('ats-match/<int:job_id>/', views.ats_match_candidates, name='ats_match_candidates'),
 ]

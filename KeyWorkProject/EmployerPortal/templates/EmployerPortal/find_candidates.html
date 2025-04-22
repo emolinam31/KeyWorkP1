@@ -305,11 +305,12 @@
                 <i class="fas fa-magic"></i> Buscar con ATS
             </button>
             <ul class="dropdown-menu" aria-labelledby="atsDropdown">
-                {% for job in job_offers %}
-                    <li><a class="dropdown-item" href="{% url 'ats_match_candidates' job.id %}">{{ job.title }}</a></li>
-                {% endfor %}
-                {% if not job_offers %}
-                    <li><span class="dropdown-item text-muted">No hay ofertas activas</span></li>
+                {% if job_offers %}
+                    {% for job in job_offers %}
+                        <li><a class="dropdown-item" href="{% url 'ats_match_candidates' job.id %}">{{ job.title }}</a></li>
+                    {% endfor %}
+                {% else %}
+                    <li><span class="dropdown-item text-muted">No hay ofertas activas. Crea una oferta primero.</span></li>
                 {% endif %}
             </ul>
         </div>

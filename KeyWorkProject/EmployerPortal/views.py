@@ -189,8 +189,11 @@ def view_job_offer(request, job_id):
     # Obtener las aplicaciones para esta oferta
     applications = JobApplication.objects.filter(job_offer=job_offer).order_by('-applied_at')
     
-    # Candidatos potenciales (para futura implementación de ATS)
-    potential_matches = CandidateMatch.objects.filter(job_offer=job_offer).order_by('-match_score')
+    # Candidatos potenciales - solo seleccionamos campos que existen
+    # Esta es la línea que necesita cambiarse para evitar el error
+    potential_matches = CandidateMatch.objects.filter(job_offer=job_offer).only(
+        'id', 'job_offer', 'job_seeker', 'match_score', 'contacted', 'created_at'
+    ).order_by('-match_score')
     
     return render(request, 'EmployerPortal/view_job_offer.html', {
         'job': job_offer,
@@ -208,8 +211,12 @@ def find_candidates(request):
         messages.error(request, 'Solo los empleadores pueden buscar candidatos.')
         return redirect('home')
     
-    # Obtener las ofertas activas del empleador
-    job_offers = JobOffer.objects.filter(company=employer_profile.company_name, active=True)
+    # Obtener explícitamente las ofertas ACTIVAS del empleador
+    job_offers = JobOffer.objects.filter(
+        company=employer_profile.company_name, 
+        active=True
+    )
+    print(f"Número de ofertas activas para {employer_profile.company_name}: {job_offers.count()}")
     
     # Lógica de búsqueda (se implementará completamente más adelante)
     search_query = request.GET.get('search', '')
@@ -226,11 +233,10 @@ def find_candidates(request):
     
     return render(request, 'EmployerPortal/find_candidates.html', {
         'candidates': candidates,
-        'job_offers': job_offers,
+        'job_offers': job_offers,  # Asegúrate de que esto se está pasando
         'search_query': search_query,
         'skill_filter': skill_filter
     })
-
 @login_required
 def contact_candidate(request, candidate_id):
     """Vista para contactar a un candidato"""
@@ -387,65 +393,194 @@ def ats_match_candidates(request, job_id):
         messages.error(request, 'No tiene permiso para acceder a esta oferta.')
         return redirect('employer_dashboard')
     
-    # Limpiar coincidencias previas para esta oferta
-    CandidateMatch.objects.filter(job_offer=job_offer).delete()
-    
-    # Preparar texto de la oferta para embedding
-    job_text = f"Título: {job_offer.title}. Descripción: {job_offer.description}. Requisitos: {job_offer.requirements}."
-    if hasattr(job_offer, 'required_skills') and job_offer.required_skills:
-        job_text += f" Habilidades requeridas: {job_offer.required_skills}."
-    
-    # Generar embedding para la oferta
-    job_embedding = get_embedding(job_text)
-    
-    if not job_embedding:
-        messages.error(request, 'No se pudo generar el análisis para esta oferta. Intente nuevamente.')
+    try:
+        print(f"Iniciando análisis ATS para oferta: {job_offer.title}")
+        
+        # Limpiar coincidencias previas para esta oferta
+        CandidateMatch.objects.filter(job_offer=job_offer).delete()
+        
+        # Preparar texto de la oferta para embedding
+        job_text = f"Título: {job_offer.title}. Descripción: {job_offer.description}. Requisitos: {job_offer.requirements}."
+        if hasattr(job_offer, 'required_skills') and job_offer.required_skills:
+            job_text += f" Habilidades requeridas: {job_offer.required_skills}."
+        
+        print("Generando embedding para la oferta...")
+        
+        # Generar embedding para la oferta
+        job_embedding = get_embedding(job_text)
+        
+        if not job_embedding:
+            messages.error(request, 'No se pudo generar el análisis para esta oferta. Intente nuevamente.')
+            return redirect('view_job_offer', job_id=job_offer.id)
+        
+        # Buscar candidatos con CV
+        candidates = JobSeekerProfile.objects.filter(has_cv=True)
+        matches = []
+        
+        print(f"Analizando {candidates.count()} candidatos potenciales...")
+        
+        # Para cada candidato, calcular la puntuación de coincidencia
+        for candidate in candidates:
+            try:
+                # Verificar que el CV tiene texto extraído
+                if not candidate.cv or not candidate.cv.extracted_text:
+                    print(f"Candidato {candidate.id} sin texto extraído, omitiendo...")
+                    continue
+                
+                # Preparar texto del candidato
+                candidate_text = f"Título profesional: {candidate.professional_title or ''}. "
+                candidate_text += f"Habilidades: {candidate.skills or ''}. "
+                candidate_text += f"Experiencia: {candidate.years_experience or 0} años. "
+                candidate_text += f"Educación: {candidate.education or ''}. "
+                candidate_text += f"CV: {candidate.cv.extracted_text}"
+                
+                # Generar embedding para el candidato
+                candidate_embedding = get_embedding(candidate_text)
+                
+                if candidate_embedding:
+                    # Calcular similitud
+                    similarity_score = calculate_similarity(job_embedding, candidate_embedding)
+                    
+                    # Convertir a porcentaje
+                    match_score = round(similarity_score * 100)
+                    print(f"Match score para candidato {candidate.id}: {match_score}%")
+                    
+                    # Guardar match si la puntuación es mayor a 30%
+                    if match_score > 30:
+                        match = CandidateMatch.objects.create(
+                            job_offer=job_offer,
+                            job_seeker=candidate,
+                            match_score=match_score,
+                            contacted=False
+                            # No incluimos job_embedding ni candidate_embedding
+                        )
+                        matches.append(match)
+                        print(f"Match guardado para candidato {candidate.id}")
+            except Exception as e:
+                print(f"Error procesando candidato {candidate.id}: {str(e)}")
+        
+        if matches:
+            messages.success(
+                request, 
+                f'Análisis completado. Se encontraron {len(matches)} candidatos potenciales.'
+            )
+        else:
+            messages.info(
+                request, 
+                'No se encontraron candidatos que coincidan con los requisitos. Intente ampliar los criterios.'
+            )
+        
         return redirect('view_job_offer', job_id=job_offer.id)
     
-    # Buscar candidatos con CV
-    candidates = JobSeekerProfile.objects.filter(has_cv=True)
-    matches = []
+    except Exception as e:
+        import traceback
+        print(f"Error en análisis ATS: {str(e)}")
+        print(traceback.format_exc())
+        messages.error(request, f'Error en análisis ATS: {str(e)}')
+        return redirect('view_job_offer', job_id=job_offer.id)
     
-    # Para cada candidato, calcular la puntuación de coincidencia
-    for candidate in candidates:
-        # Preparar texto del candidato
-        candidate_text = f"Título profesional: {candidate.professional_title or ''}. "
-        candidate_text += f"Habilidades: {candidate.skills or ''}. "
-        candidate_text += f"Experiencia: {candidate.years_experience or 0} años. "
-        candidate_text += f"Educación: {candidate.education or ''}. "
-        
-        if candidate.cv and candidate.cv.extracted_text:
-            candidate_text += f"CV: {candidate.cv.extracted_text}"
-        
-        # Generar embedding para el candidato
-        candidate_embedding = get_embedding(candidate_text)
-        
-        if candidate_embedding:
-            # Calcular similitud
-            similarity_score = calculate_similarity(job_embedding, candidate_embedding)
-            
-            # Convertir a porcentaje
-            match_score = round(similarity_score * 100)
-            
-            # Guardar match si la puntuación es mayor a 30%
-            if match_score > 30:
-                match = CandidateMatch.objects.create(
-                    job_offer=job_offer,
-                    job_seeker=candidate,
-                    match_score=match_score,
-                    contacted=False
-                )
-                matches.append(match)
+@login_required
+def edit_job_offer(request, job_id):
+    """Vista para editar una oferta de trabajo existente"""
+    # Verificar que el usuario sea un empleador
+    try:
+        employer_profile = EmployerProfile.objects.get(user=request.user)
+    except EmployerProfile.DoesNotExist:
+        messages.error(request, 'Solo los empleadores pueden editar ofertas de trabajo.')
+        return redirect('home')
     
-    if matches:
-        messages.success(
-            request, 
-            f'Análisis completado. Se encontraron {len(matches)} candidatos potenciales.'
-        )
-    else:
-        messages.info(
-            request, 
-            'No se encontraron candidatos que coincidan con los requisitos. Intente ampliar los criterios.'
-        )
+    # Obtener la oferta
+    job_offer = get_object_or_404(JobOffer, id=job_id)
     
-    return redirect('view_job_offer', job_id=job_offer.id)
+    # Verificar que la oferta pertenezca al empleador
+    if job_offer.company != employer_profile.company_name:
+        messages.error(request, 'No tiene permiso para editar esta oferta.')
+        return redirect('employer_dashboard')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        
+        # Actualizar datos de la oferta
+        job_offer.title = request.POST.get('title', '')
+        job_offer.location = request.POST.get('location', '')
+        job_offer.description = request.POST.get('description', '')
+        job_offer.requirements = request.POST.get('requirements', '')
+        job_offer.salary_range = request.POST.get('salary_range', '')
+        job_offer.job_type = request.POST.get('job_type', '')
+        job_offer.remote = 'remote' in request.POST
+        
+        # Campos adicionales si existen
+        if 'required_skills' in request.POST:
+            job_offer.required_skills = request.POST.get('required_skills', '')
+        
+        try:
+            job_offer.save()
+            messages.success(request, 'Oferta de trabajo actualizada exitosamente.')
+            return redirect('view_job_offer', job_id=job_offer.id)
+        except Exception as e:
+            messages.error(request, f'Error al actualizar la oferta: {str(e)}')
+    
+    # Mostrar formulario para editar
+    return render(request, 'EmployerPortal/edit_job_offer.html', {'job': job_offer})
+
+@login_required
+def delete_job_offer(request, job_id):
+    """Vista para eliminar una oferta de trabajo"""
+    # Verificar que el usuario sea un empleador
+    try:
+        employer_profile = EmployerProfile.objects.get(user=request.user)
+    except EmployerProfile.DoesNotExist:
+        messages.error(request, 'Solo los empleadores pueden eliminar ofertas de trabajo.')
+        return redirect('home')
+    
+    # Obtener la oferta
+    job_offer = get_object_or_404(JobOffer, id=job_id)
+    
+    # Verificar que la oferta pertenezca al empleador
+    if job_offer.company != employer_profile.company_name:
+        messages.error(request, 'No tiene permiso para eliminar esta oferta.')
+        return redirect('employer_dashboard')
+    
+    if request.method == 'POST':
+        # Eliminar la oferta
+        job_title = job_offer.title  # Guardar el título para mensaje
+        try:
+            job_offer.delete()
+            messages.success(request, f'La oferta "{job_title}" ha sido eliminada exitosamente.')
+            return redirect('employer_dashboard')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar la oferta: {str(e)}')
+            return redirect('view_job_offer', job_id=job_id)
+    
+    # Mostrar página de confirmación
+    return render(request, 'EmployerPortal/confirm_delete_job.html', {'job': job_offer})
+
+@login_required
+def toggle_job_status(request, job_id):
+    """Vista para activar/desactivar una oferta de trabajo"""
+    # Verificar que el usuario sea un empleador
+    try:
+        employer_profile = EmployerProfile.objects.get(user=request.user)
+    except EmployerProfile.DoesNotExist:
+        messages.error(request, 'Solo los empleadores pueden gestionar ofertas de trabajo.')
+        return redirect('home')
+    
+    # Obtener la oferta
+    job_offer = get_object_or_404(JobOffer, id=job_id)
+    
+    # Verificar que la oferta pertenezca al empleador
+    if job_offer.company != employer_profile.company_name:
+        messages.error(request, 'No tiene permiso para gestionar esta oferta.')
+        return redirect('employer_dashboard')
+    
+    # Cambiar estado
+    try:
+        job_offer.active = not job_offer.active
+        job_offer.save()
+        
+        status_text = "activada" if job_offer.active else "desactivada"
+        messages.success(request, f'La oferta ha sido {status_text} exitosamente.')
+    except Exception as e:
+        messages.error(request, f'Error al cambiar el estado de la oferta: {str(e)}')
+    
+    return redirect('view_job_offer', job_id=job_id)

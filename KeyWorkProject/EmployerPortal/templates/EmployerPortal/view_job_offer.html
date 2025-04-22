@@ -380,18 +380,22 @@
         
         <div class="job-actions">
             {% if job.active %}
-                <button class="action-btn btn-danger">
+                <a href="{% url 'toggle_job_status' job.id %}" class="action-btn btn-danger">
                     <i class="fas fa-power-off"></i> Desactivar Oferta
-                </button>
+                </a>
             {% else %}
-                <button class="action-btn btn-success">
+                <a href="{% url 'toggle_job_status' job.id %}" class="action-btn btn-success">
                     <i class="fas fa-power-off"></i> Activar Oferta
-                </button>
+                </a>
             {% endif %}
             
-            <button class="action-btn btn-warning">
+            <a href="{% url 'edit_job_offer' job.id %}" class="action-btn btn-warning">
                 <i class="fas fa-edit"></i> Editar Oferta
-            </button>
+            </a>
+            
+            <a href="{% url 'delete_job_offer' job.id %}" class="action-btn btn-danger">
+                <i class="fas fa-trash"></i> Eliminar Oferta
+            </a>
             
             <a href="{% url 'find_candidates' %}?job_id={{ job.id }}" class="action-btn btn-primary">
                 <i class="fas fa-search"></i> Buscar Candidatos
@@ -417,13 +421,13 @@
         </div>
     </div>
     
-    <!-- Sección ATS -->
+        <!-- Sección ATS -->
     <div class="ats-section">
         <h2 class="ats-title">
             <i class="fas fa-robot"></i> Sistema de Seguimiento de Aplicantes (ATS)
         </h2>
         <p class="ats-description">
-            Utilice nuestra tecnología ATS impulsada por IA para encontrar automáticamente los mejores candidatos para esta posición. 
+            Utilizando tecnología de IA, puede encontrar automáticamente los mejores candidatos para esta posición. 
             El sistema analizará los CVs y perfiles para encontrar las coincidencias más adecuadas basadas en las habilidades requeridas.
         </p>
         

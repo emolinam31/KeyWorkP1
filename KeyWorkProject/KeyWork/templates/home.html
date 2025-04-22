@@ -175,30 +175,29 @@
     <div class="welcome-text">🚀 ¡Bienvenido a KeyWork! 🌟</div>
     
     {% if user.is_authenticated %}
-        {% if user.profile.user_type == 'employer' %}
+        {% if user.employerprofile_profile %}
             <!-- Usuario autenticado como Employer -->
-            <a href="{% url 'employer_portal' %}" class="main-button">
+            <a href="{% url 'employer_dashboard' %}" class="main-button">
                 <i class="fas fa-building"></i> Ir al Portal de Empleador
             </a>
             
             <div class="user-message">
                 <p>Accede a tu portal para publicar vacantes y encontrar candidatos.</p>
             </div>
-        {% else %}
-
+        {% elif user.jobseekerprofile_profile %}
+            <!-- Usuario autenticado como JobSeeker -->
             <div class="button-container">
                 <a href="{% url 'upload_cv' %}" class="main-button">
                     <i class="fas fa-file-upload"></i> Subir mi CV
                 </a>
-                <a class="nav-link" href="{% url 'job_listings' %}" class="main-button">
+                <a href="{% url 'job_listings' %}" class="main-button">
                     <i class="fas fa-briefcase"></i> Aplicar Empleos
                 </a>
-                
             </div>
             
-            {% if user.profile.cv %}
+            {% if user.jobseekerprofile_profile.cv %}
                 <div class="cv-buttons">
-                    <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="view-cv-button">
+                    <a href="{% url 'cv_detail' user.jobseekerprofile_profile.cv.pk %}" class="view-cv-button">
                         <i class="fas fa-file-alt button-icon"></i> Ver mi CV Actual
                     </a>
                     <a href="{% url 'upload_cv' %}" class="update-cv-button">

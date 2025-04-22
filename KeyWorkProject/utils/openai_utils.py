@@ -12,16 +12,22 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Función para generar embeddings
 def get_embedding(text):
     if not text or text.strip() == "":
+        print("Error: Texto vacío para embedding")
         return None
     
     try:
+        print(f"Solicitando embedding para texto de {len(text)} caracteres")
         response = client.embeddings.create(
             model="text-embedding-3-small",
             input=text
         )
-        return response.data[0].embedding
+        embedding = response.data[0].embedding
+        print(f"Embedding generado correctamente: {len(embedding)} dimensiones")
+        return embedding
     except Exception as e:
         print(f"Error generando embedding: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
 
 # Función para calcular similitud (usando la fórmula del coseno)
