@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block title %}Actualizar Aplicación - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .update-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .back-link {
+        color: #fff;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: all 0.3s;
+    }
+    
+    .back-link:hover {
+        opacity: 1;
+        color: #00c3ff;
+    }
+    
+    .back-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .application-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .application-header {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(26, 188, 156, 0.3));
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .application-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .candidate-name {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .application-body {
+        padding: 1.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        gap: 2rem;
+    }
+    
+    .info-column {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .info-item {
+        margin-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #00c3ff;
+        margin-bottom: 0.3rem;
+    }
+    
+    .info-value {
+        color: #fff;
+    }
+    
+    .cover-letter {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .cover-letter-title {
+        font-weight: 600;
+        color: #00c3ff;
+        margin-bottom: 1rem;
+    }
+    
+    .cover-letter-text {
+        color: #fff;
+        white-space: pre-line;
+    }
+    
+    .form-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        padding: 2rem;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #00c3ff;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-title i {
+        margin-right: 0.8rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        color: #fff;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        transition: all 0.3s;
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: #00c3ff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 195, 255, 0.25);
+    }
+    
+    .form-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .status-option {
+        display: flex;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 10px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .status-option:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .status-option input {
+        margin-right: 1rem;
+    }
+    
+    .status-option-in_review {
+        border-left: 3px solid #f39c12;
+    }
+    
+    .status-option-interview {
+        border-left: 3px solid #9b59b6;
+    }
+    
+    .status-option-rejected {
+        border-left: 3px solid #e74c3c;
+    }
+    
+    .status-option-accepted {
+        border-left: 3px solid #2ecc71;
+    }
+    
+    .status-title {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    
+    .status-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .btn-update {
+        background: linear-gradient(45deg, #3498db, #00c3ff);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-update:hover {
+        background: linear-gradient(45deg, #00c3ff, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-update i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-cancel {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1rem;
+    }
+    
+    .btn-cancel:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .btn-cancel i {
+        margin-right: 0.5rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .application-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-applied { background-color: rgba(52, 152, 219, 0.2); color: #3498db; }
+    .status-in_review { background-color: rgba(243, 156, 18, 0.2); color: #f39c12; }
+    .status-interview { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+    .status-rejected { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+    .status-accepted { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="update-container">
+    <a href="{% url 'view_applications' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver a Aplicaciones
+    </a>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="application-card">
+        <div class="application-header">
+            <h2 class="application-title">{{ application.job_offer.title }}</h2>
+            <div class="candidate-name">Candidato: {{ application.job_seeker.full_name|default:application.job_seeker.user.username }}</div>
+        </div>
+        
+        <div class="application-body">
+            <div class="info-row">
+                <div class="info-column">
+                    <div class="info-item">
+                        <div class="info-label">Fecha de Aplicación</div>
+                        <div class="info-value">{{ application.applied_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Estado Actual</div>
+                        <div class="info-value">
+                            <span class="application-status status-{{ application.status }}">
+                                {{ application.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-column">
+                    <div class="info-item">
+                        <div class="info-label">Empresa</div>
+                        <div class="info-value">{{ application.job_offer.company }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Ubicación</div>
+                        <div class="info-value">{{ application.job_offer.location }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if application.cover_letter %}
+                <div class="cover-letter">
+                    <div class="cover-letter-title">Carta de Presentación</div>
+                    <div class="cover-letter-text">{{ application.cover_letter }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-card">
+        <h2 class="form-title">
+            <i class="fas fa-sync-alt"></i> Actualizar Estado de la Aplicación
+        </h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Seleccione el nuevo estado</label>
+                
+                <label class="status-option status-option-in_review">
+                    <input type="radio" name="status" value="in_review" {% if application.status == 'in_review' %}checked{% endif %}>
+                    <div>
+                        <div class="status-title">En Revisión</div>
+                        <div class="status-description">Actualmente revisando la aplicación y considerando al candidato.</div>
+                    </div>
+                </label>
+                
+                <label class="status-option status-option-interview">
+                    <input type="radio" name="status" value="interview" {% if application.status == 'interview' %}checked{% endif %}>
+                    <div>
+                        <div class="status-title">Entrevista</div>
+                        <div class="status-description">El candidato ha sido seleccionado para una entrevista.</div>
+                    </div>
+                </label>
+                
+                <label class="status-option status-option-rejected">
+                    <input type="radio" name="status" value="rejected" {% if application.status == 'rejected' %}checked{% endif %}>
+                    <div>
+                        <div class="status-title">Rechazado</div>
+                        <div class="status-description">El candidato no ha sido seleccionado para esta posición.</div>
+                    </div>
+                </label>
+                
+                <label class="status-option status-option-accepted">
+                    <input type="radio" name="status" value="accepted" {% if application.status == 'accepted' %}checked{% endif %}>
+                    <div>
+                        <div class="status-title">Aceptado</div>
+                        <div class="status-description">El candidato ha sido aceptado para el puesto.</div>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label for="feedback" class="form-label">Comentarios (opcional)</label>
+                <textarea name="feedback" id="feedback" rows="4" class="form-control"></textarea>
+                <div class="form-text">Estos comentarios se enviarán al candidato junto con la actualización de estado.</div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'view_applications' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn-update">
+                    <i class="fas fa-sync-alt"></i> Actualizar Estado
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

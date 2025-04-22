@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Candidatos - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .candidates-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .search-bar {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .search-title {
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+        color: #00c3ff;
+    }
+    
+    .search-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    
+    .search-field {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .form-label {
+        color: #fff;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: #00c3ff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 195, 255, 0.25);
+    }
+    
+    .btn-search {
+        background: linear-gradient(45deg, #3498db, #00c3ff);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-search:hover {
+        background: linear-gradient(45deg, #00c3ff, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .back-link {
+        color: #fff;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: all 0.3s;
+    }
+    
+    .back-link:hover {
+        opacity: 1;
+        color: #00c3ff;
+    }
+    
+    .back-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .ats-banner {
+        background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.2));
+        border: 1px solid rgba(155, 89, 182, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .ats-content {
+        flex: 1;
+    }
+    
+    .ats-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: #9b59b6;
+    }
+    
+    .ats-description {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0;
+    }
+    
+    .ats-button {
+        background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin-left: 1.5rem;
+        white-space: nowrap;
+    }
+    
+    .ats-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .candidates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .candidate-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .candidate-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .candidate-header {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(26, 188, 156, 0.3));
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .candidate-name {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .candidate-title {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .candidate-body {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .candidate-info {
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+        margin-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #00c3ff;
+        margin-bottom: 0.3rem;
+    }
+    
+    .info-value {
+        color: #fff;
+    }
+    
+    .candidate-skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .skill-tag {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border-radius: 50px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .candidate-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .btn-contact {
+        background: linear-gradient(45deg, #3498db, #00c3ff);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-contact i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-contact:hover {
+        background: linear-gradient(45deg, #00c3ff, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+    }
+    
+    .no-results i {
+        font-size: 3rem;
+        color: #00c3ff;
+        margin-bottom: 1rem;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="candidates-container">
+    <a href="{% url 'employer_dashboard' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver al Panel
+    </a>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="search-bar">
+        <h2 class="search-title">Buscar Candidatos</h2>
+        <form method="get" class="search-form">
+            <div class="search-field">
+                <label for="search" class="form-label">Búsqueda por palabras clave</label>
+                <input type="text" id="search" name="search" class="form-control" value="{{ search_query }}" placeholder="Ej: Desarrollador, Marketing, Ingeniero...">
+            </div>
+            
+            <div class="search-field">
+                <label for="skills" class="form-label">Filtrar por habilidades</label>
+                <input type="text" id="skills" name="skills" class="form-control" value="{{ skill_filter }}" placeholder="Ej: Python, Marketing, Excel...">
+            </div>
+            
+            <div>
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="ats-banner">
+        <div class="ats-content">
+            <h3 class="ats-title"><i class="fas fa-robot"></i> Sistema de Seguimiento de Aplicantes (ATS)</h3>
+            <p class="ats-description">Utilizando tecnología de IA, puede encontrar automáticamente los mejores candidatos que coincidan con los requisitos de su oferta de trabajo.</p>
+        </div>
+        
+        <div class="dropdown">
+            <button class="ats-button dropdown-toggle" type="button" id="atsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-magic"></i> Buscar con ATS
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="atsDropdown">
+                {% for job in job_offers %}
+                    <li><a class="dropdown-item" href="{% url 'ats_match_candidates' job.id %}">{{ job.title }}</a></li>
+                {% endfor %}
+                {% if not job_offers %}
+                    <li><span class="dropdown-item text-muted">No hay ofertas activas</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    
+    {% if candidates %}
+        <div class="candidates-grid">
+            {% for candidate in candidates %}
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <h2 class="candidate-name">{{ candidate.full_name|default:candidate.user.username }}</h2>
+                        <div class="candidate-title">{{ candidate.professional_title|default:"" }}</div>
+                    </div>
+                    
+                    <div class="candidate-body">
+                        <div class="candidate-info">
+                            {% if candidate.location %}
+                                <div class="info-item">
+                                    <div class="info-label"><i class="fas fa-map-marker-alt"></i> Ubicación</div>
+                                    <div class="info-value">{{ candidate.location }}</div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if candidate.years_experience %}
+                                <div class="info-item">
+                                    <div class="info-label"><i class="fas fa-briefcase"></i> Experiencia</div>
+                                    <div class="info-value">{{ candidate.years_experience }} años</div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if candidate.education %}
+                                <div class="info-item">
+                                    <div class="info-label"><i class="fas fa-graduation-cap"></i> Educación</div>
+                                    <div class="info-value">{{ candidate.education|truncatechars:100 }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if candidate.skills %}
+                            <div>
+                                <div class="info-label mb-2"><i class="fas fa-tools"></i> Habilidades</div>
+                                <div class="candidate-skills">
+                                    {% for skill in candidate.skills_as_list %}
+                                        <span class="skill-tag">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="candidate-footer">
+                        <a href="{% url 'contact_candidate' candidate.id %}" class="btn-contact">
+                            <i class="fas fa-envelope"></i> Contactar
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <i class="fas fa-search"></i>
+            <h3>No se encontraron candidatos</h3>
+            <p>Intente modificar los criterios de búsqueda o utilice la tecnología ATS para encontrar candidatos adecuados.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

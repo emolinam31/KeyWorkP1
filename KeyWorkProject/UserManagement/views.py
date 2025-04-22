@@ -51,7 +51,7 @@ def signupaccount(request):
                 'form': CustomUserCreationForm(),
                 'error': 'Las contraseñas no coinciden.'
             })
-            
+                        
 @login_required
 def upload_cv(request):
     """Sube un CV, lo almacena y extrae texto si es PDF o imagen."""
@@ -217,32 +217,28 @@ def logoutaccount(request):
 def complete_employer_profile(request):
     # Verificar que el usuario sea de tipo empleador
     try:
-        if request.user.profile.user_type != 'employer':
-            print(f"Usuario {request.user.username} intentó acceder a perfil de empleador siendo {request.user.profile.user_type}")
-            messages.error(request, 'No tiene permisos para acceder a esta página.')
-            return redirect('home')
-    except UserProfile.DoesNotExist:
-        print(f"Usuario {request.user.username} no tiene perfil configurado")
-        messages.error(request, 'No tiene un perfil configurado.')
+        employer_profile = EmployerProfile.objects.get(user=request.user)
+    except EmployerProfile.DoesNotExist:
+        messages.error(request, 'No tiene un perfil de empleador configurado.')
         return redirect('home')
     
     if request.method == 'GET':
-        form = EmployerProfileForm(instance=request.user.profile)
+        form = EmployerProfileForm(instance=employer_profile)
         return render(request, 'user_management/complete_employer_profile.html', {'form': form})
     else:
         try:
-            print(f"Procesando solicitud POST para completar perfil de empleador para {request.user.username}")
-            form = EmployerProfileForm(request.POST, instance=request.user.profile)
+            form = EmployerProfileForm(request.POST, instance=employer_profile)
             if form.is_valid():
-                print(f"Formulario válido, guardando perfil")
-                form.save()
-                print(f"Perfil de empleador guardado correctamente")
+                profile = form.save(commit=False)
+                profile.profile_completed = True
+                profile.save()
+                
                 messages.success(request, 'Perfil actualizado correctamente.')
-                return redirect('employer_portal')
+                return redirect('employer_dashboard')
             else:
-                print(f"Formulario inválido. Errores: {form.errors}")
                 return render(request, 'user_management/complete_employer_profile.html', {'form': form})
         except Exception as e:
+            import traceback
             print(f"Error al guardar el perfil de empleador: {str(e)}")
             print(traceback.format_exc())
             messages.error(request, f'Error al guardar el perfil: {str(e)}')
@@ -326,7 +322,6 @@ def profile_view(request):
             # No tiene ningún tipo de perfil, error
             messages.error(request, 'No tiene un perfil configurado correctamente.')
             return redirect('home')
-        
         
         
         
