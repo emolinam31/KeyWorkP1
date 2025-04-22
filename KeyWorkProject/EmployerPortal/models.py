@@ -53,6 +53,8 @@ class CandidateMatch(models.Model):
     match_score = models.FloatField()  # Puntuación de coincidencia (0-100)
     contacted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    job_embedding = models.TextField(blank=True, null=True)
+    candidate_embedding = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return f"Match: {self.job_seeker.user.username} - {self.job_offer.title} ({self.match_score}%)"

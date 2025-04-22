@@ -483,37 +483,37 @@
             </div>
         {% endif %}
     </div>
-    
     <!-- Candidatos potenciales (para ATS) -->
     {% if potential_matches %}
-        <div class="content-card">
-            <h2 class="card-title">
-                <i class="fas fa-user-tag"></i> Candidatos Potenciales
-            </h2>
-            
-            {% for match in potential_matches %}
-                <div class="candidate-card">
-                    <div class="candidate-info">
-                        <div class="candidate-name">{{ match.job_seeker.full_name|default:match.job_seeker.user.username }}</div>
-                        <div class="candidate-title">{{ match.job_seeker.professional_title|default:"" }}</div>
-                        {% if match.job_seeker.skills %}
-                            <div class="candidate-skills">
-                                <small class="text-muted">Habilidades: {{ match.job_seeker.skills }}</small>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <div class="match-score">
-                            <div class="score-value">{{ match.match_score }}%</div>
-                            <div class="score-text">Match</div>
+    <div class="content-card">
+        <h2 class="card-title">
+            <i class="fas fa-user-tag"></i> Candidatos Potenciales
+        </h2>
+        
+        {% for match in potential_matches %}
+            <div class="candidate-card">
+                <div class="candidate-info">
+                    <div class="candidate-name">{{ match.job_seeker.full_name|default:match.job_seeker.user.username }}</div>
+                    <div class="candidate-title">{{ match.job_seeker.professional_title|default:"" }}</div>
+                    {% if match.job_seeker.skills %}
+                        <div class="candidate-skills">
+                            <small class="text-muted">Habilidades: {{ match.job_seeker.skills }}</small>
                         </div>
-                        <a href="{% url 'contact_candidate' match.job_seeker.id %}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-envelope"></i> Contactar
-                        </a>
-                    </div>
+                    {% endif %}
                 </div>
-            {% endfor %}
-        </div>
+                <div class="d-flex align-items-center">
+                    <div class="match-score">
+                        <div class="score-value">{{ match.match_score }}%</div>
+                        <div class="score-text">Match</div>
+                    </div>
+                    <a href="{% url 'contact_candidate' match.job_seeker.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-envelope"></i> Contactar
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
     {% endif %}
+    
 </div>
 {% endblock %}

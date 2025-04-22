@@ -10,6 +10,7 @@ class JobOffer(models.Model):
     description = models.TextField()
     requirements = models.TextField()
     salary_range = models.CharField(max_length=100, blank=True, null=True)
+    required_skills = models.TextField(blank=True, null=True)
     job_type = models.CharField(max_length=50, choices=[
         ('full_time', 'Tiempo completo'),
         ('part_time', 'Medio tiempo'),
