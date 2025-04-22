@@ -11,7 +11,6 @@ from django.db.models import F
 
 @login_required
 def employer_dashboard(request):
-    """Vista principal del portal de empleador"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -41,7 +40,6 @@ def employer_dashboard(request):
 
 @login_required
 def create_job_offer(request):
-    """Vista para crear una nueva oferta de trabajo"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -109,7 +107,6 @@ def create_job_offer(request):
 
 @login_required
 def edit_job_draft(request, draft_id):
-    """Vista para editar un borrador de oferta de trabajo"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -170,7 +167,6 @@ def edit_job_draft(request, draft_id):
 
 @login_required
 def view_job_offer(request, job_id):
-    """Vista para ver el detalle de una oferta de trabajo"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -203,7 +199,6 @@ def view_job_offer(request, job_id):
 
 @login_required
 def find_candidates(request):
-    """Vista para buscar candidatos"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -237,9 +232,9 @@ def find_candidates(request):
         'search_query': search_query,
         'skill_filter': skill_filter
     })
+    
 @login_required
 def contact_candidate(request, candidate_id):
-    """Vista para contactar a un candidato"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -304,7 +299,6 @@ def contact_candidate(request, candidate_id):
 
 @login_required
 def view_applications(request):
-    """Vista para ver todas las aplicaciones recibidas"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -330,7 +324,6 @@ def view_applications(request):
 
 @login_required
 def update_application(request, application_id):
-    """Vista para actualizar el estado de una aplicación"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -377,7 +370,6 @@ def update_application(request, application_id):
 
 @login_required
 def ats_match_candidates(request, job_id):
-    """Vista para realizar matching ATS (Applicant Tracking System)"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -481,7 +473,6 @@ def ats_match_candidates(request, job_id):
     
 @login_required
 def edit_job_offer(request, job_id):
-    """Vista para editar una oferta de trabajo existente"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -525,7 +516,6 @@ def edit_job_offer(request, job_id):
 
 @login_required
 def delete_job_offer(request, job_id):
-    """Vista para eliminar una oferta de trabajo"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)
@@ -557,7 +547,6 @@ def delete_job_offer(request, job_id):
 
 @login_required
 def toggle_job_status(request, job_id):
-    """Vista para activar/desactivar una oferta de trabajo"""
     # Verificar que el usuario sea un empleador
     try:
         employer_profile = EmployerProfile.objects.get(user=request.user)

@@ -10,7 +10,6 @@ urlpatterns = [
     path('cv/<int:pk>/delete/', views.delete_cv, name='delete_cv'),
 ]
 
-# Agregar la ruta de prueba solo en modo DEBUG
 if settings.DEBUG:
     urlpatterns += [
         path('test-extraction/', views.test_extraction, name='test_extraction'),

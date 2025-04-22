@@ -1,4 +1,3 @@
-# KeyWorkProject/CollectionPoint/models.py
 from django.db import models
 
 class CV(models.Model):

@@ -46,9 +46,7 @@ class JobOfferDraft(models.Model):
         
         return job_offer
 
-# En EmployerPortal/models.py
 class CandidateMatch(models.Model):
-    """Modelo para candidatos que coinciden con ofertas de trabajo"""
     job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
     job_seeker = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE)
     match_score = models.FloatField()  # Puntuación de coincidencia (0-100)

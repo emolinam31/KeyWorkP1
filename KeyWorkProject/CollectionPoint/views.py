@@ -12,6 +12,7 @@ from PIL import Image
 import os
 from PyPDF2 import PdfReader
 from pdf2image import convert_from_path
+import re
 
 # Configuración de Tesseract (usando la configuración del settings.py)
 tesseract_cmd = getattr(settings, 'TESSERACT_CMD', None)
@@ -31,7 +32,6 @@ def index(request):
     return HttpResponse("¡Bienvenido a KeyWork! 🚀")
 
 def extract_text_from_pdf(pdf_path):
-    """Extrae texto de un archivo PDF. Si no hay texto embebido, usa OCR."""
     try:
         print(f"Intentando extraer texto de: {pdf_path}")
         pdf_reader = PdfReader(pdf_path)
@@ -64,7 +64,6 @@ def extract_text_from_pdf(pdf_path):
 
 @login_required
 def upload_cv(request):
-    """Sube un CV, lo almacena y extrae texto si es PDF o imagen."""
     # Intentar obtener el perfil de JobSeeker
     try:
         jobseeker_profile = JobSeekerProfile.objects.get(user=request.user)
@@ -170,10 +169,6 @@ def upload_cv(request):
         })
         
 def extract_and_update_profile_data(profile, text):
-    """
-    Extrae información del texto del CV y actualiza el perfil del usuario.
-    Esta es una implementación muy básica. Aquí es donde integrarías tu modelo de IA.
-    """
     text_lower = text.lower()
     
     # Detectar habilidades comunes
@@ -225,10 +220,8 @@ def extract_and_update_profile_data(profile, text):
                     )[:100]  # Limitar a 100 caracteres
                     break
 
-
 @login_required
 def cv_detail(request, pk):
-    """Vista para mostrar los detalles del CV y el texto extraído."""
     cv = get_object_or_404(CV, pk=pk)
         
     # Verificar si el usuario tiene permiso para ver este CV
@@ -272,7 +265,6 @@ def cv_detail(request, pk):
 
 @login_required
 def delete_cv(request, pk):
-    """Eliminar un CV."""
     cv = get_object_or_404(CV, pk=pk)
     
     # Verificar que el usuario tiene permiso para eliminar este CV
@@ -294,7 +286,6 @@ def delete_cv(request, pk):
     return redirect('profile')
 
 def process_ocr(request, pk):
-    """Procesar o reprocesar una imagen existente con OCR."""
     cv = get_object_or_404(CV, pk=pk)
 
     if cv.upload_type != 'image':
@@ -331,7 +322,6 @@ def process_ocr(request, pk):
     return redirect('cv_detail', pk=cv.pk)
 
 def test_extraction(request):
-    """Vista para probar la extracción de texto (solo para desarrollo)."""
     if not settings.DEBUG:
         return HttpResponse("Esta vista solo está disponible en modo DEBUG")
     
@@ -389,13 +379,7 @@ def test_extraction(request):
     
     return render(request, 'test_extraction.html', context)
 
-def extract_and_update_profile_data(profile, text):
-    """
-    Extrae información del texto del CV y actualiza el perfil del usuario.
-    Versión mejorada con técnicas de NLP básicas.
-    """
-    import re
-    
+def extract_and_update_profile_data(profile, text):    
     text_lower = text.lower()
     lines = text.split('\n')
     

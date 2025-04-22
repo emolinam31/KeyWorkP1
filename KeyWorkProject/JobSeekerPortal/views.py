@@ -6,7 +6,6 @@ from UserManagement.models import JobSeekerProfile
 
 @login_required
 def job_listings(request):
-    """Vista principal: muestra todas las ofertas de trabajo disponibles"""
     # Obtener todas las ofertas activas
     jobs = JobOffer.objects.filter(active=True)
     
@@ -31,7 +30,6 @@ def job_listings(request):
 
 @login_required
 def job_detail(request, job_id):
-    """Vista para ver el detalle de una oferta de trabajo"""
     job = get_object_or_404(JobOffer, id=job_id, active=True)
     
     # Verificar si el usuario es un JobSeeker
@@ -55,7 +53,6 @@ def job_detail(request, job_id):
 
 @login_required
 def apply_job(request, job_id):
-    """Vista para aplicar a una oferta de trabajo"""
     job = get_object_or_404(JobOffer, id=job_id, active=True)
     
     # Verificar si el usuario es un JobSeeker
@@ -89,7 +86,6 @@ def apply_job(request, job_id):
 
 @login_required
 def my_applications(request):
-    """Vista para ver las aplicaciones del usuario"""
     # Verificar si el usuario es un JobSeeker
     try:
         profile = JobSeekerProfile.objects.get(user=request.user)
@@ -110,7 +106,6 @@ def my_applications(request):
 
 @login_required
 def notifications(request):
-    """Vista para ver todas las notificaciones"""
     # Verificar si el usuario es un JobSeeker
     try:
         profile = JobSeekerProfile.objects.get(user=request.user)

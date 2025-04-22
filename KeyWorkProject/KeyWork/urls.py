@@ -1,4 +1,3 @@
-# KeyWorkProject/KeyWork/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
@@ -18,7 +17,7 @@ urlpatterns = [
     path('employer/', include('EmployerPortal.urls')),  # URLs para el portal de empleadores
     path('user/', include('UserManagement.urls')),  # URLs para la gestión de usuarios
     path('jobseeker/', include('JobSeekerPortal.urls')),
-    # path('job-seeker/', include('JobSeekerPortal.urls')),  # URLs para el portal de quien busca empleo (comentado hasta implementar)
+    
 ]
 
 # Servir archivos multimedia en desarrollo

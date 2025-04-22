@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from UserManagement.models import JobSeekerProfile
 
 class JobOffer(models.Model):
-    """Modelo para las ofertas de trabajo que verán los candidatos"""
     title = models.CharField(max_length=200)
     company = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
@@ -30,7 +29,6 @@ class JobOffer(models.Model):
         ordering = ['-created_at']
 
 class JobApplication(models.Model):
-    """Modelo para las aplicaciones a ofertas de trabajo"""
     job_seeker = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE)
     job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
     cover_letter = models.TextField(blank=True, null=True)
@@ -51,7 +49,6 @@ class JobApplication(models.Model):
         unique_together = ('job_seeker', 'job_offer')
 
 class Notification(models.Model):
-    """Modelo para las notificaciones que recibirán los candidatos"""
     recipient = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     message = models.TextField()

@@ -9,7 +9,6 @@ from .models import JobSeekerProfile, EmployerProfile
 from CollectionPoint.models import CV
 import traceback
 
-
 def signupaccount(request):
     if request.method == 'GET':
         return render(request, 'user_management/signup.html', {'form': CustomUserCreationForm()})
@@ -54,7 +53,6 @@ def signupaccount(request):
                         
 @login_required
 def upload_cv(request):
-    """Sube un CV, lo almacena y extrae texto si es PDF o imagen."""
     # Verificar si el usuario es jobseeker
     user_type = request.GET.get('user_type', '')
     
@@ -359,4 +357,3 @@ def profile_view(request):
             <button type="submit">Probar</button>
         </form>
         """)
-###

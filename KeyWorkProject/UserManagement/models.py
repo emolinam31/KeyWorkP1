@@ -1,10 +1,8 @@
-# UserManagement/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from CollectionPoint.models import CV
 
 class BaseProfile(models.Model):
-    """Clase base abstracta para perfiles de usuario"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="%(class)s_profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -14,7 +12,6 @@ class BaseProfile(models.Model):
         abstract = True
 
 class JobSeekerProfile(BaseProfile):
-    """Perfil específico para buscadores de empleo"""
     # Información personal
     full_name = models.CharField(max_length=150, blank=True, null=True)
     professional_title = models.CharField(max_length=100, blank=True, null=True)
@@ -48,13 +45,11 @@ class JobSeekerProfile(BaseProfile):
         return f"{self.full_name or self.user.username} (Candidato)"
     
     def skills_as_list(self):
-        """Retorna las habilidades como una lista."""
         if not self.skills:
             return []
         return [skill.strip() for skill in self.skills.split(',')]
     
     def languages_as_list(self):
-        """Retorna los idiomas como una lista."""
         if not self.languages:
             return []
         return [language.strip() for language in self.languages.split(',')]
@@ -68,7 +63,6 @@ class JobSeekerProfile(BaseProfile):
         ]
 
 class EmployerProfile(BaseProfile):
-    """Perfil específico para empleadores"""
     company_name = models.CharField(max_length=100, blank=True, null=True)
     industry = models.CharField(max_length=100, blank=True, null=True)
     COMPANY_SIZE_CHOICES = (
