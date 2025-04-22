@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}Contactar Candidato - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contact-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .back-link {
+        color: #fff;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: all 0.3s;
+    }
+    
+    .back-link:hover {
+        opacity: 1;
+        color: #00c3ff;
+    }
+    
+    .back-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .candidate-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .candidate-header {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(26, 188, 156, 0.3));
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .candidate-name {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .candidate-title {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .candidate-body {
+        padding: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+    
+    .candidate-info {
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .info-item {
+        margin-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #00c3ff;
+        margin-bottom: 0.3rem;
+    }
+    
+    .info-value {
+        color: #fff;
+    }
+    
+    .candidate-skills {
+        margin-top: 1.5rem;
+    }
+    
+    .skills-title {
+        font-weight: 600;
+        color: #00c3ff;
+        margin-bottom: 0.8rem;
+    }
+    
+    .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .skill-tag {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border-radius: 50px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .message-form {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        padding: 2rem;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #00c3ff;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-title i {
+        margin-right: 0.8rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        color: #fff;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        transition: all 0.3s;
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: #00c3ff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 195, 255, 0.25);
+    }
+    
+    .form-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .btn-send {
+        background: linear-gradient(45deg, #3498db, #00c3ff);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .btn-send:hover {
+        background: linear-gradient(45deg, #00c3ff, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-send i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-cancel {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1rem;
+    }
+    
+    .btn-cancel:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .btn-cancel i {
+        margin-right: 0.5rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+    <a href="{% url 'find_candidates' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver a Candidatos
+    </a>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="candidate-card">
+        <div class="candidate-header">
+            <h2 class="candidate-name">{{ candidate.full_name|default:candidate.user.username }}</h2>
+            <div class="candidate-title">{{ candidate.professional_title|default:"" }}</div>
+        </div>
+        
+        <div class="candidate-body">
+            <div class="candidate-info">
+                {% if candidate.location %}
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-map-marker-alt"></i> Ubicación</div>
+                        <div class="info-value">{{ candidate.location }}</div>
+                    </div>
+                {% endif %}
+                
+                {% if candidate.years_experience %}
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-briefcase"></i> Experiencia</div>
+                        <div class="info-value">{{ candidate.years_experience }} años</div>
+                    </div>
+                {% endif %}
+                
+                {% if candidate.education %}
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-graduation-cap"></i> Educación</div>
+                        <div class="info-value">{{ candidate.education|linebreaksbr }}</div>
+                    </div>
+                {% endif %}
+                
+                {% if candidate.languages %}
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-globe"></i> Idiomas</div>
+                        <div class="info-value">{{ candidate.languages }}</div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if candidate.skills %}
+                <div class="candidate-skills">
+                    <div class="skills-title"><i class="fas fa-tools"></i> Habilidades</div>
+                    <div class="skills-list">
+                        {% for skill in candidate.skills_as_list %}
+                            <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="message-form">
+        <h2 class="form-title">
+            <i class="fas fa-envelope"></i> Enviar Mensaje
+        </h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="job_id" class="form-label">Oferta de Trabajo</label>
+                <select name="job_id" id="job_id" class="form-control" required>
+                    <option value="">Seleccione una oferta</option>
+                    {% for job in job_offers %}
+                        <option value="{{ job.id }}">{{ job.title }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Seleccione la oferta de trabajo relacionada con este mensaje.</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="subject" class="form-label">Asunto</label>
+                <input type="text" name="subject" id="subject" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="message" class="form-label">Mensaje</label>
+                <textarea name="message" id="message" rows="6" class="form-control" required></textarea>
+                <div class="form-text">Presente su empresa y la oportunidad laboral de manera clara y atractiva.</div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'find_candidates' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn-send">
+                    <i class="fas fa-paper-plane"></i> Enviar Mensaje
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

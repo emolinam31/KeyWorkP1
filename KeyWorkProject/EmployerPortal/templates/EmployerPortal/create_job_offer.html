@@ -157,20 +157,20 @@
             </h2>
             
             <div class="mb-3">
-                <label for="title" class="form-label">Título del Puesto</label>
+                <label for="title" class="form-label">Título del Puesto <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="title" name="title" required>
                 <div class="form-text">Ej: Desarrollador Web Full Stack, Diseñador UX/UI, Analista de Datos</div>
             </div>
             
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="location" class="form-label">Ubicación</label>
+                    <label for="location" class="form-label">Ubicación <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="location" name="location" required>
                     <div class="form-text">Ciudad o "Remoto" si el trabajo es completamente remoto</div>
                 </div>
                 
                 <div class="col-md-6">
-                    <label for="job_type" class="form-label">Tipo de Contrato</label>
+                    <label for="job_type" class="form-label">Tipo de Contrato <span class="text-danger">*</span></label>
                     <select class="form-control" id="job_type" name="job_type" required>
                         <option value="">Seleccione un tipo</option>
                         <option value="full_time">Tiempo completo</option>
@@ -200,6 +200,20 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="years_experience" class="form-label">Años de Experiencia Requeridos <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="years_experience" name="years_experience" min="0" required>
+                    <div class="form-text">Mínimo de años de experiencia necesarios para el puesto</div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="required_skills" class="form-label">Habilidades Requeridas <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="required_skills" name="required_skills" required>
+                    <div class="form-text">Ej: Python, Django, SQL (separadas por comas)</div>
+                </div>
+            </div>
         </div>
         
         <div class="form-card">
@@ -208,13 +222,13 @@
             </h2>
             
             <div class="mb-3">
-                <label for="description" class="form-label">Descripción del Puesto</label>
+                <label for="description" class="form-label">Descripción del Puesto <span class="text-danger">*</span></label>
                 <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
                 <div class="form-text">Describe las responsabilidades, el entorno de trabajo y lo que la posición ofrece</div>
             </div>
             
             <div class="mb-3">
-                <label for="requirements" class="form-label">Requisitos y Habilidades</label>
+                <label for="requirements" class="form-label">Requisitos y Habilidades <span class="text-danger">*</span></label>
                 <textarea class="form-control" id="requirements" name="requirements" rows="6" required></textarea>
                 <div class="form-text">Detalla la experiencia, educación y habilidades requeridas para el puesto</div>
             </div>

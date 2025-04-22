@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} - Detalle de Oferta - KeyWork{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .job-header {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .job-title {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: #fff;
+    }
+    
+    .job-company {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .job-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .job-meta-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.95rem;
+    }
+    
+    .job-meta-item i {
+        margin-right: 0.5rem;
+        color: #00c3ff;
+    }
+    
+    .job-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #3498db, #00c3ff);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #00c3ff, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(45deg, #27ae60, #2ecc71);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(45deg, #2ecc71, #27ae60);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(45deg, #f39c12, #e67e22);
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(45deg, #e67e22, #f39c12);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .back-link {
+        color: #fff;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: all 0.3s;
+    }
+    
+    .back-link:hover {
+        opacity: 1;
+        color: #00c3ff;
+    }
+    
+    .back-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .content-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #00c3ff;
+        display: flex;
+        align-items: center;
+    }
+    
+    .card-title i {
+        margin-right: 0.8rem;
+    }
+    
+    .job-description, .job-requirements {
+        color: #fff;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-active {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+    
+    .status-expired {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+    
+    .applications-table {
+        width: 100%;
+        margin-top: 1.5rem;
+    }
+    
+    .applications-table th, .applications-table td {
+        padding: 1rem;
+        text-align: left;
+    }
+    
+    .applications-table th {
+        background-color: rgba(0, 0, 0, 0.2);
+        color: #00c3ff;
+    }
+    
+    .applications-table td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .applications-table tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .no-applications {
+        text-align: center;
+        padding: 2rem;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin-top: 1.5rem;
+    }
+    
+    .no-applications i {
+        font-size: 3rem;
+        color: rgba(255, 255, 255, 0.2);
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .ats-section {
+        margin-top: 2rem;
+        background-color: rgba(155, 89, 182, 0.1);
+        border: 1px solid rgba(155, 89, 182, 0.3);
+        border-radius: 15px;
+        padding: 2rem;
+    }
+    
+    .ats-title {
+        color: #9b59b6;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .ats-title i {
+        margin-right: 0.8rem;
+    }
+    
+    .ats-description {
+        margin-bottom: 1.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .ats-btn {
+        background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .ats-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .candidate-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s;
+    }
+    
+    .candidate-card:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .candidate-info {
+        flex: 1;
+    }
+    
+    .candidate-name {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    
+    .candidate-title {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .match-score {
+        display: flex;
+        align-items: center;
+        margin-right: 1rem;
+    }
+    
+    .score-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #9b59b6;
+        margin-right: 0.5rem;
+    }
+    
+    .score-text {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .application-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .application-status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-applied { background-color: rgba(52, 152, 219, 0.2); color: #3498db; }
+    .status-in_review { background-color: rgba(243, 156, 18, 0.2); color: #f39c12; }
+    .status-interview { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+    .status-rejected { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+    .status-accepted { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="job-detail-container">
+    <a href="{% url 'employer_dashboard' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver al Panel
+    </a>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="job-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="job-title">{{ job.title }}</h1>
+                <div class="job-company">{{ job.company }}</div>
+            </div>
+            <div>
+                {% if job.active %}
+                    <span class="status-badge status-active">Activa</span>
+                {% else %}
+                    <span class="status-badge status-expired">Inactiva</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="job-meta">
+            <div class="job-meta-item">
+                <i class="fas fa-map-marker-alt"></i> {{ job.location }}
+            </div>
+            <div class="job-meta-item">
+                <i class="fas fa-clock"></i> {{ job.get_job_type_display }}
+            </div>
+            {% if job.remote %}
+            <div class="job-meta-item">
+                <i class="fas fa-laptop-house"></i> Remoto
+            </div>
+            {% endif %}
+            {% if job.salary_range %}
+            <div class="job-meta-item">
+                <i class="fas fa-money-bill-wave"></i> {{ job.salary_range }}
+            </div>
+            {% endif %}
+            <div class="job-meta-item">
+                <i class="fas fa-calendar-alt"></i> Publicado: {{ job.created_at|date:"d/m/Y" }}
+            </div>
+            <div class="job-meta-item">
+                <i class="fas fa-hourglass-end"></i> Expira: {{ job.expires_at|date:"d/m/Y" }}
+            </div>
+        </div>
+        
+        <div class="job-actions">
+            {% if job.active %}
+                <button class="action-btn btn-danger">
+                    <i class="fas fa-power-off"></i> Desactivar Oferta
+                </button>
+            {% else %}
+                <button class="action-btn btn-success">
+                    <i class="fas fa-power-off"></i> Activar Oferta
+                </button>
+            {% endif %}
+            
+            <button class="action-btn btn-warning">
+                <i class="fas fa-edit"></i> Editar Oferta
+            </button>
+            
+            <a href="{% url 'find_candidates' %}?job_id={{ job.id }}" class="action-btn btn-primary">
+                <i class="fas fa-search"></i> Buscar Candidatos
+            </a>
+        </div>
+    </div>
+    
+    <div class="content-card">
+        <h2 class="card-title">
+            <i class="fas fa-info-circle"></i> Descripción
+        </h2>
+        <div class="job-description">
+            {{ job.description|linebreaks }}
+        </div>
+    </div>
+    
+    <div class="content-card">
+        <h2 class="card-title">
+            <i class="fas fa-clipboard-list"></i> Requisitos
+        </h2>
+        <div class="job-requirements">
+            {{ job.requirements|linebreaks }}
+        </div>
+    </div>
+    
+    <!-- Sección ATS -->
+    <div class="ats-section">
+        <h2 class="ats-title">
+            <i class="fas fa-robot"></i> Sistema de Seguimiento de Aplicantes (ATS)
+        </h2>
+        <p class="ats-description">
+            Utilice nuestra tecnología ATS impulsada por IA para encontrar automáticamente los mejores candidatos para esta posición. 
+            El sistema analizará los CVs y perfiles para encontrar las coincidencias más adecuadas basadas en las habilidades requeridas.
+        </p>
+        
+        <a href="{% url 'ats_match_candidates' job.id %}" class="ats-btn">
+            <i class="fas fa-magic"></i> Iniciar Búsqueda ATS
+        </a>
+    </div>
+    
+    <!-- Sección de aplicaciones recibidas -->
+    <div class="content-card">
+        <h2 class="card-title">
+            <i class="fas fa-user-check"></i> Aplicaciones Recibidas
+        </h2>
+        
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="applications-table">
+                    <thead>
+                        <tr>
+                            <th>Candidato</th>
+                            <th>Fecha de Aplicación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ application.job_seeker.full_name|default:application.job_seeker.user.username }}</div>
+                                    <div class="text-muted small">{{ application.job_seeker.professional_title|default:'' }}</div>
+                                </td>
+                                <td>{{ application.applied_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="application-status-badge status-{{ application.status }}">
+                                        {{ application.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="application-actions">
+                                    <a href="#" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                    <a href="{% url 'update_application' application.id %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Actualizar
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-applications">
+                <i class="fas fa-inbox"></i>
+                <h3>No hay aplicaciones aún</h3>
+                <p>Cuando los candidatos apliquen a esta oferta, aparecerán aquí.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Candidatos potenciales (para ATS) -->
+    {% if potential_matches %}
+        <div class="content-card">
+            <h2 class="card-title">
+                <i class="fas fa-user-tag"></i> Candidatos Potenciales
+            </h2>
+            
+            {% for match in potential_matches %}
+                <div class="candidate-card">
+                    <div class="candidate-info">
+                        <div class="candidate-name">{{ match.job_seeker.full_name|default:match.job_seeker.user.username }}</div>
+                        <div class="candidate-title">{{ match.job_seeker.professional_title|default:"" }}</div>
+                        {% if match.job_seeker.skills %}
+                            <div class="candidate-skills">
+                                <small class="text-muted">Habilidades: {{ match.job_seeker.skills }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="match-score">
+                            <div class="score-value">{{ match.match_score }}%</div>
+                            <div class="score-text">Match</div>
+                        </div>
+                        <a href="{% url 'contact_candidate' match.job_seeker.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-envelope"></i> Contactar
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
