@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from .models import CV
+from UserManagement.forms import CustomUserCreationForm, EmployerProfileForm, JobSeekerProfileForm
+from UserManagement.models import JobSeekerProfile, EmployerProfile
 import pytesseract
 from PIL import Image
 import os
@@ -63,13 +65,12 @@ def extract_text_from_pdf(pdf_path):
 @login_required
 def upload_cv(request):
     """Sube un CV, lo almacena y extrae texto si es PDF o imagen."""
-    # Verificar si el usuario es jobseeker
+    # Intentar obtener el perfil de JobSeeker
     try:
-        if request.user.profile.user_type != 'jobseeker':
-            messages.error(request, 'Solo los buscadores de empleo pueden subir hojas de vida.')
-            return redirect('home')
-    except:
-        messages.error(request, 'Error al verificar su perfil.')
+        jobseeker_profile = JobSeekerProfile.objects.get(user=request.user)
+    except JobSeekerProfile.DoesNotExist:
+        # Si no existe, posiblemente es un empleador
+        messages.error(request, 'Solo los buscadores de empleo pueden subir hojas de vida.')
         return redirect('home')
         
     if request.method == 'POST':
@@ -94,68 +95,48 @@ def upload_cv(request):
                     upload_type=upload_type
                 )
                 cv.save()
-                print(f"CV guardado con ID: {cv.id}, Tipo: {upload_type}")
 
                 extracted_text = ""
 
-                # Si es un documento PDF, extraer texto con PyPDF2 y OCR si es necesario
+                # Si es un documento PDF, extraer texto
                 if upload_type == 'document' and uploaded_file.name.endswith(".pdf"):
                     extracted_text = extract_text_from_pdf(cv.file.path)
                     cv.extracted_text = extracted_text
                     cv.save()
-                    print(f"Texto extraído y guardado para PDF")
 
                 # Si es una imagen, procesar con OCR
                 elif upload_type == 'image':
                     try:
                         img = Image.open(cv.file.path)
                         extracted_text = pytesseract.image_to_string(img, lang='spa+eng')
-
-                        # Guardar el texto extraído
                         cv.extracted_text = extracted_text
                         cv.save()
-                        print(f"Texto extraído y guardado para imagen")
-
                         messages.success(request, '¡Imagen subida y texto extraído correctamente!')
                     except Exception as e:
-                        print(f"OCR Error: {e}")
                         messages.warning(request, 'CV subido pero la extracción de texto falló.')
 
                 # Asociar el CV con el perfil del usuario
                 try:
-                    # Obtener el perfil del usuario
-                    profile = request.user.profile
-                    print(f"Perfil obtenido para usuario {request.user.username}, tipo: {profile.user_type}")
-                    
-                    # Asociar CV con el perfil en una transacción para garantizar la consistencia
                     with transaction.atomic():
-                        print(f"Asignando CV {cv.id} a perfil {profile.id}")
-                        old_cv = profile.cv
-                        profile.cv = cv
-                        profile.has_cv = True  # Marcar que el usuario tiene CV
+                        old_cv = jobseeker_profile.cv
+                        jobseeker_profile.cv = cv
+                        jobseeker_profile.has_cv = True
                         
-                        # Intentar extraer información básica del texto si existe
+                        # Extraer información del texto
                         if extracted_text:
-                            print(f"Extrayendo información del texto para el perfil")
-                            extract_and_update_profile_data(profile, extracted_text)
+                            jobseeker_profile = extract_and_update_profile_data(jobseeker_profile, extracted_text)
                         
-                        profile.save()
-                        print(f"Perfil guardado correctamente. CV asignado: {profile.cv.id if profile.cv else None}")
+                        jobseeker_profile.save()
                     
                     messages.success(request, '¡CV subido y asociado a tu perfil exitosamente!')
-                    
-                    # Si el usuario tenía un CV anterior y es diferente al nuevo, registrarlo en los logs
-                    if old_cv and old_cv.id != cv.id:
-                        print(f"El usuario tenía un CV anterior (ID: {old_cv.id}) que ha sido reemplazado")
                 except Exception as e:
                     import traceback
                     print(f"Error al asociar CV al perfil: {str(e)}")
                     print(traceback.format_exc())
                     messages.warning(request, f'CV subido pero no se pudo asociar al perfil: {str(e)}')
 
-                return redirect('profile')  # Redirigir al perfil después de subir CV
+                return redirect('profile')
             except Exception as e:
-                print(f"Error al guardar el CV: {str(e)}")
                 messages.error(request, f'Error al procesar el archivo: {str(e)}')
                 return redirect('upload_cv')
         else:
@@ -179,15 +160,14 @@ def upload_cv(request):
             })
     else:
         # Verificar si el usuario ya tiene un CV
-        has_cv = hasattr(request.user.profile, 'cv') and request.user.profile.cv is not None
+        has_cv = jobseeker_profile.has_cv
         
         # Mostrar opciones de tipo de archivo
         return render(request, 'upload_options.html', {
             'title': 'Subir Hoja de Vida',
             'has_cv': has_cv,
-            'is_required': not has_cv  # Indicar si es obligatorio (no tiene CV)
+            'is_required': not has_cv
         })
-
         
 def extract_and_update_profile_data(profile, text):
     """
@@ -245,9 +225,49 @@ def extract_and_update_profile_data(profile, text):
                     )[:100]  # Limitar a 100 caracteres
                     break
 
+
+@login_required
 def cv_detail(request, pk):
     """Vista para mostrar los detalles del CV y el texto extraído."""
     cv = get_object_or_404(CV, pk=pk)
+        
+    # Verificar si el usuario tiene permiso para ver este CV
+    try:
+        jobseeker_profile = JobSeekerProfile.objects.get(user=request.user)
+        if jobseeker_profile.cv != cv:
+            messages.error(request, 'No tienes permiso para ver este CV.')
+            return redirect('profile')
+    except JobSeekerProfile.DoesNotExist:
+        messages.error(request, 'No se pudo verificar tu perfil.')
+        return redirect('home')
+    
+    # Verificar acciones por GET
+    action = request.GET.get('action', '')
+    if action == 'correct':
+        return render(request, 'correct_cv.html', {'cv': cv})
+    elif action == 'delete':
+        return render(request, 'confirm_delete_cv.html', {'cv': cv})
+    
+    
+    # Si el método es POST, procesar la corrección del texto
+    if request.method == 'POST' and 'corrected_text' in request.POST:
+        # Guardar el texto corregido
+        cv.extracted_text = request.POST['corrected_text']
+        cv.save()
+        
+        # Actualizar el perfil con la información corregida
+        try:
+            # Obtener el perfil de JobSeeker
+            jobseeker_profile = JobSeekerProfile.objects.get(user=request.user)
+            
+            # Extraer información del texto corregido para actualizar el perfil
+            jobseeker_profile = extract_and_update_profile_data(jobseeker_profile, cv.extracted_text)
+            jobseeker_profile.save()
+            
+            messages.success(request, '¡Texto corregido y perfil actualizado correctamente!')
+        except JobSeekerProfile.DoesNotExist:
+            messages.warning(request, 'Texto corregido pero no se pudo actualizar el perfil.')
+    
     return render(request, 'cv_detail.html', {'cv': cv})
 
 @login_required
@@ -368,3 +388,220 @@ def test_extraction(request):
         context['errors'].append(f"Error en imagen: {str(e)}")
     
     return render(request, 'test_extraction.html', context)
+
+def extract_and_update_profile_data(profile, text):
+    """
+    Extrae información del texto del CV y actualiza el perfil del usuario.
+    Versión mejorada con técnicas de NLP básicas.
+    """
+    import re
+    
+    text_lower = text.lower()
+    lines = text.split('\n')
+    
+    # 1. Detectar nombre completo (generalmente al inicio del CV)
+    if not profile.full_name:
+        # Buscar en las primeras líneas del CV
+        name_patterns = [
+            r'^([A-ZÁ-Ú][a-zá-ú]+\s+[A-ZÁ-Ú][a-zá-ú]+(\s+[A-ZÁ-Ú][a-zá-ú]+)?)',  # Patrón para "Nombre Apellido"
+            r'^(CV|CURRICULUM VITAE|HOJA DE VIDA)[:\s-]*([A-ZÁ-Ú][a-zá-ú]+\s+[A-ZÁ-Ú][a-zá-ú]+)'  # Patrón para "CV: Nombre Apellido"
+        ]
+        
+        for i, line in enumerate(lines[:10]):  # Revisar solo las primeras 10 líneas
+            for pattern in name_patterns:
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    profile.full_name = match.group(1).strip()
+                    break
+            if profile.full_name:
+                break
+    
+    # 2. Detectar título profesional
+    if not profile.professional_title:
+        # Buscar palabras clave de profesiones comunes
+        professional_titles = [
+            "ingeniero", "desarrollador", "programador", "diseñador", "analista", 
+            "gerente", "director", "especialista", "consultor", "asistente",
+            "arquitecto", "contador", "abogado", "médico", "profesor",
+            "psicólogo", "administrador", "economista", "periodista"
+        ]
+        
+        # Buscar patrones como "Ingeniero de Sistemas", "Desarrollador Web", etc.
+        title_patterns = [
+            r'(ingeniero\s+(?:de|en)\s+\w+)',
+            r'(desarrollador\s+(?:de|en)\s+\w+)',
+            r'(analista\s+(?:de|en)\s+\w+)',
+            r'(\w+\s+senior)',
+            r'(\w+\s+junior)',
+            r'(licenciado\s+(?:de|en)\s+\w+)',
+        ]
+        
+        # Buscar en los primeros párrafos
+        first_paragraphs = ' '.join(lines[:15])
+        
+        for pattern in title_patterns:
+            match = re.search(pattern, first_paragraphs, re.IGNORECASE)
+            if match:
+                profile.professional_title = match.group(1).title()
+                break
+        
+        # Si no se encontró un patrón específico, buscar palabras clave
+        if not profile.professional_title:
+            for title in professional_titles:
+                if title in text_lower:
+                    # Buscar contexto alrededor del título
+                    idx = text_lower.find(title)
+                    start = max(0, idx - 20)
+                    end = min(len(text_lower), idx + 50)
+                    context = text_lower[start:end]
+                    
+                    # Extraer una frase coherente
+                    words = context.split()
+                    title_idx = -1
+                    for i, word in enumerate(words):
+                        if title in word:
+                            title_idx = i
+                            break
+                    
+                    if title_idx >= 0:
+                        # Extraer hasta 5 palabras para formar el título
+                        title_words = words[max(0, title_idx-1):min(len(words), title_idx+4)]
+                        profile.professional_title = ' '.join([w.capitalize() for w in title_words])
+                        break
+    
+    # 3. Detectar años de experiencia
+    if not profile.years_experience:
+        experience_patterns = [
+            r'(\d+)\s+años\s+de\s+experiencia',
+            r'experiencia\s+(?:de|:)\s+(\d+)\s+años',
+            r'(\d+)\s+años\s+en\s+el\s+sector',
+        ]
+        
+        for pattern in experience_patterns:
+            match = re.search(pattern, text_lower)
+            if match:
+                try:
+                    years = int(match.group(1))
+                    if 0 <= years <= 50:  # Valor razonable de años
+                        profile.years_experience = years
+                        break
+                except:
+                    pass
+    
+    # 4. Detectar habilidades comunes
+    common_skills = [
+        "python", "java", "javascript", "html", "css", "django", "react", "angular", 
+        "node.js", "sql", "marketing", "ventas", "comunicación", "liderazgo", 
+        "desarrollo web", "gestión de proyectos", "excel", "word", "powerpoint",
+        "photoshop", "illustrator", "php", "ruby", "c++", "c#", ".net", "aws",
+        "docker", "kubernetes", "machine learning", "data science", "análisis de datos"
+    ]
+    
+    # Buscar sección de habilidades
+    skill_section_patterns = [
+        r'(?:habilidades|skills|competencias)[\s:]+(.+?)(?:\n\n|\n\w+:)',
+        r'(?:technical skills|conocimientos técnicos)[\s:]+(.+?)(?:\n\n|\n\w+:)'
+    ]
+    
+    detected_skills = []
+    
+    # Primero intentar extraer de una sección específica
+    for pattern in skill_section_patterns:
+        match = re.search(pattern, text_lower, re.DOTALL | re.IGNORECASE)
+        if match:
+            skills_text = match.group(1)
+            # Extraer habilidades de la sección encontrada
+            potential_skills = re.findall(r'(\w+(?:\s+\w+){0,2})', skills_text)
+            for skill in potential_skills:
+                skill = skill.strip()
+                if len(skill) > 3 and skill not in detected_skills:
+                    detected_skills.append(skill.capitalize())
+    
+    # Si no se encontraron habilidades en secciones, buscar en todo el texto
+    if not detected_skills:
+        for skill in common_skills:
+            if skill in text_lower:
+                detected_skills.append(skill.capitalize())
+    
+    if detected_skills and not profile.skills:
+        profile.skills = ", ".join(detected_skills)
+    
+    # 5. Detectar idiomas
+    languages = ["inglés","español", "francés", "alemán", "italiano", "portugués", "chino", "japonés", "ruso"]
+    level_terms = ["nativo", "fluido", "avanzado", "intermedio", "básico"]
+    
+    # Buscar sección de idiomas
+    language_section_patterns = [
+        r'(?:idiomas|languages)[\s:]+(.+?)(?:\n\n|\n\w+:)',
+    ]
+    
+    detected_languages = []
+    
+    # Primero intentar extraer de una sección específica
+    for pattern in language_section_patterns:
+        match = re.search(pattern, text_lower, re.DOTALL | re.IGNORECASE)
+        if match:
+            lang_text = match.group(1)
+            # Extraer idiomas con nivel si está disponible
+            for lang in languages:
+                if lang in lang_text:
+                    # Buscar si hay un nivel asociado
+                    for level in level_terms:
+                        if level in lang_text:
+                            detected_languages.append(f"{lang.capitalize()} ({level.capitalize()})")
+                            break
+                    else:
+                        detected_languages.append(lang.capitalize())
+    
+    # Si no se encontraron idiomas en secciones, buscar en todo el texto
+    if not detected_languages:
+        for lang in languages:
+            if lang in text_lower:
+                detected_languages.append(lang.capitalize())
+    
+    if detected_languages and not profile.languages:
+        profile.languages = ", ".join(detected_languages)
+    
+    # 6. Detectar educación
+    if not profile.education:
+        # Buscar sección de educación
+        education_section_patterns = [
+            r'(?:educación|education|formación académica)[\s:]+(.+?)(?:\n\n|\n\w+:)',
+        ]
+        
+        for pattern in education_section_patterns:
+            match = re.search(pattern, text_lower, re.DOTALL | re.IGNORECASE)
+            if match:
+                edu_text = match.group(1).strip()
+                if len(edu_text) > 10:  # Asegurarse que tiene contenido significativo
+                    profile.education = edu_text.capitalize()
+                    break
+    
+    # 7. Detectar ubicación
+    if not profile.location:
+        location_patterns = [
+            r'(?:dirección|location|ubicación)[\s:]+(.+?)(?:\n|\n\n)',
+            r'(?:ciudad|city)[\s:]+(.+?)(?:\n|\n\n)',
+        ]
+        
+        for pattern in location_patterns:
+            match = re.search(pattern, text_lower, re.DOTALL | re.IGNORECASE)
+            if match:
+                profile.location = match.group(1).strip().capitalize()
+                break
+    
+    # 8. Detectar número telefónico
+    if not profile.phone_number:
+        phone_patterns = [
+            r'(?:teléfono|phone|celular|móvil|tel)[\s:]+(\+?\d[\d\s-]{8,})',
+            r'(\+\d{1,3}\s?\d{3}[\s-]?\d{3}[\s-]?\d{4})',
+            r'(\d{3}[\s-]?\d{3}[\s-]?\d{4})',
+        ]
+        
+        for pattern in phone_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                profile.phone_number = match.group(1).strip()
+                break
+    
+    return profile

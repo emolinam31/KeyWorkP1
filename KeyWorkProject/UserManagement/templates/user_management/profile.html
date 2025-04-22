@@ -315,6 +315,7 @@
 </style>
 {% endblock %}
 
+
 {% block content %}
 <div class="profile-container">
     <!-- Cabecera del perfil -->
@@ -324,7 +325,7 @@
         </div>
         <div class="profile-info">
             <h1 class="profile-name">{{ user.username }}</h1>
-            {% if user.profile.user_type == 'employer' %}
+            {% if profile_type == 'employer' %}
                 <span class="profile-type profile-type-employer">
                     <i class="fas fa-building"></i> Empleador
                 </span>
@@ -337,7 +338,7 @@
                 <i class="fas fa-envelope"></i> {{ user.email }}
             </div>
             <div class="profile-actions">
-                {% if user.profile.user_type == 'employer' %}
+                {% if profile_type == 'employer' %}
                     <a href="{% url 'complete_employer_profile' %}" class="btn btn-sm btn-accent">
                         <i class="fas fa-edit"></i> Editar Perfil
                     </a>
@@ -347,9 +348,6 @@
                 {% else %}
                     <a href="{% url 'complete_jobseeker_profile' %}" class="btn btn-sm btn-accent">
                         <i class="fas fa-edit"></i> Editar Perfil
-                    </a>
-                    <a href="{% url 'upload_cv' %}" class="btn btn-sm btn-outline">
-                        <i class="fas fa-file-upload"></i> Gestionar CV
                     </a>
                 {% endif %}
             </div>
@@ -365,15 +363,15 @@
     {% endif %}
     
     <!-- Botón principal para subir CV si es JobSeeker -->
-    {% if user.profile.user_type == 'jobseeker' and not user.profile.cv %}
+    {% if profile_type == 'jobseeker' and not jobseeker_profile.has_cv %}
     <a href="{% url 'upload_cv' %}" class="upload-cv-btn">
         <i class="fas fa-file-upload"></i> Subir mi Currículum
     </a>
     {% endif %}
     
-    <!-- Estructura principal modificada: GRID en lugar de filas y columnas -->
+    <!-- Grid de información del perfil -->
     <div class="profile-grid">
-        {% if user.profile.user_type == 'employer' %}
+        {% if profile_type == 'employer' %}
             <!-- Información del Empleador -->
             <div class="card">
                 <div class="card-header">
@@ -383,8 +381,8 @@
                     <div class="info-item">
                         <div class="info-label">Nombre de la Empresa</div>
                         <div class="info-value">
-                            {% if user.profile.company_name %}
-                                {{ user.profile.company_name }}
+                            {% if employer_profile.company_name %}
+                                {{ employer_profile.company_name }}
                             {% else %}
                                 <span class="not-provided">No proporcionado</span>
                             {% endif %}
@@ -393,8 +391,8 @@
                     <div class="info-item">
                         <div class="info-label">Industria</div>
                         <div class="info-value">
-                            {% if user.profile.industry %}
-                                {{ user.profile.industry }}
+                            {% if employer_profile.industry %}
+                                {{ employer_profile.industry }}
                             {% else %}
                                 <span class="not-provided">No proporcionado</span>
                             {% endif %}
@@ -403,8 +401,30 @@
                     <div class="info-item">
                         <div class="info-label">Tamaño de la Empresa</div>
                         <div class="info-value">
-                            {% if user.profile.company_size %}
-                                {{ user.profile.company_size }}
+                            {% if employer_profile.company_size %}
+                                {{ employer_profile.get_company_size_display }}
+                            {% else %}
+                                <span class="not-provided">No proporcionado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Sitio Web</div>
+                        <div class="info-value">
+                            {% if employer_profile.company_website %}
+                                <a href="{{ employer_profile.company_website }}" target="_blank" class="website-link">
+                                    {{ employer_profile.company_website }}
+                                </a>
+                            {% else %}
+                                <span class="not-provided">No proporcionado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ubicación</div>
+                        <div class="info-value">
+                            {% if employer_profile.company_location %}
+                                {{ employer_profile.company_location }}
                             {% else %}
                                 <span class="not-provided">No proporcionado</span>
                             {% endif %}
@@ -425,6 +445,7 @@
             </div>
         {% else %}
             <!-- Información del Buscador de Empleo -->
+            <!-- Información del Buscador de Empleo (versión simplificada) -->
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-user"></i> Información Personal
@@ -433,18 +454,8 @@
                     <div class="info-item">
                         <div class="info-label">Nombre Completo</div>
                         <div class="info-value">
-                            {% if user.profile.full_name %}
-                                {{ user.profile.full_name }}
-                            {% else %}
-                                <span class="not-provided">No proporcionado</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Título Profesional</div>
-                        <div class="info-value">
-                            {% if user.profile.professional_title %}
-                                {{ user.profile.professional_title }}
+                            {% if jobseeker_profile.full_name %}
+                                {{ jobseeker_profile.full_name }}
                             {% else %}
                                 <span class="not-provided">No proporcionado</span>
                             {% endif %}
@@ -453,8 +464,8 @@
                     <div class="info-item">
                         <div class="info-label">Ubicación</div>
                         <div class="info-value">
-                            {% if user.profile.location %}
-                                {{ user.profile.location }}
+                            {% if jobseeker_profile.location %}
+                                {{ jobseeker_profile.location }}
                             {% else %}
                                 <span class="not-provided">No proporcionado</span>
                             {% endif %}
@@ -463,8 +474,8 @@
                     <div class="info-item">
                         <div class="info-label">Años de Experiencia</div>
                         <div class="info-value">
-                            {% if user.profile.years_experience %}
-                                {{ user.profile.years_experience }} años
+                            {% if jobseeker_profile.years_experience %}
+                                {{ jobseeker_profile.years_experience }} años
                             {% else %}
                                 <span class="not-provided">No proporcionado</span>
                             {% endif %}
@@ -472,35 +483,53 @@
                     </div>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-globe"></i> Idiomas
+                </div>
+                <div class="card-body">
+                    {% if jobseeker_profile.languages %}
+                        <div class="languages-container">
+                            {% for language in jobseeker_profile.languages_as_list %}
+                                <span class="skill-tag">{{ language }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center not-provided">
+                            No has agregado idiomas a tu perfil.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
             
             <div class="card">
                 <div class="card-header">
                     <div><i class="fas fa-file-alt"></i> Mi CV </div>
-                    {% if user.profile.cv %}
+                    {% if jobseeker_profile.cv %}
                     <div>
                         <span class="cv-badge 
-                            {% if user.profile.cv.upload_type == 'document' %}cv-badge-document
-                            {% elif user.profile.cv.upload_type == 'image' %}cv-badge-image
+                            {% if jobseeker_profile.cv.upload_type == 'document' %}cv-badge-document
+                            {% elif jobseeker_profile.cv.upload_type == 'image' %}cv-badge-image
                             {% else %}cv-badge-audio{% endif %}">
-                            {{ user.profile.cv.get_upload_type_display }}
+                            {{ jobseeker_profile.cv.get_upload_type_display }}
                         </span>
                     </div>
                     {% endif %}
                 </div>
                 <div class="card-body">
-                    {% if user.profile.cv %}
+                    {% if jobseeker_profile.cv %}
                         <div class="info-item">
                             <div class="info-label">CV Actual</div>
                             
                             <!-- CV Info -->
                             <div class="cv-info">
-                                <p><strong>Subido:</strong> {{ user.profile.cv.uploaded_at|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Subido:</strong> {{ jobseeker_profile.cv.uploaded_at|date:"d/m/Y H:i" }}</p>
                             </div>
                             
                             <!-- Acciones del CV - Simplificado -->
                             <div class="cv-actions">
-                                <a href="{% url 'cv_detail' user.profile.cv.pk %}" class="btn btn-accent">
-                                    <i class="fas fa-eye"></i> Ver Detalles de mi CV
+                                <a href="{% url 'cv_detail' jobseeker_profile.cv.pk %}" class="btn btn-accent">
+                                    <i class="fas fa-eye"></i> Gestionar CV
                                 </a>
                             </div>
                         </div>
@@ -521,9 +550,9 @@
                     <i class="fas fa-tools"></i> Habilidades
                 </div>
                 <div class="card-body">
-                    {% if user.profile.skills %}
+                    {% if jobseeker_profile.skills %}
                         <div class="skills-container">
-                            {% for skill in user.profile.skills_as_list %}
+                            {% for skill in jobseeker_profile.skills_as_list %}
                                 <span class="skill-tag">{{ skill }}</span>
                             {% endfor %}
                         </div>
@@ -540,9 +569,9 @@
                     <i class="fas fa-graduation-cap"></i> Educación
                 </div>
                 <div class="card-body">
-                    {% if user.profile.education %}
+                    {% if jobseeker_profile.education %}
                         <div class="info-value">
-                            {{ user.profile.education|linebreaks }}
+                            {{ jobseeker_profile.education|linebreaks }}
                         </div>
                     {% else %}
                         <p class="text-center not-provided">
@@ -551,52 +580,7 @@
                     {% endif %}
                 </div>
             </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-globe"></i> Idiomas
-                </div>
-                <div class="card-body">
-                    {% if user.profile.languages %}
-                        <div class="languages-container">
-                            {% for language in user.profile.languages_as_list %}
-                                <span class="skill-tag">{{ language }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-center not-provided">
-                            No has agregado idiomas a tu perfil.
-                        </p>
-                    {% endif %}
-                </div>
-            </div>
         {% endif %}
     </div>
 </div>
-
-<!-- Modal para confirmar eliminación (mantenerlo fuera del grid) -->
-{% if user.profile.user_type == 'jobseeker' and user.profile.cv %}
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="deleteModalLabel">Confirmar Eliminación</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i> Esta acción eliminará permanentemente tu CV actual. ¿Estás seguro?
-                </div>
-                <p>Una vez eliminado, no podrás recuperar este documento.</p>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancelar</button>
-                <a href="{% url 'delete_cv' user.profile.cv.pk %}" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Sí, Eliminar
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 {% endblock %}

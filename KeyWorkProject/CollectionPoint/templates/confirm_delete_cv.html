@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar CV - KeyWork{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card bg-dark text-white">
+        <div class="card-header">
+            <h3>Confirmar Eliminación</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Esta acción eliminará permanentemente tu CV actual. ¿Estás seguro?
+            </div>
+            <p>Una vez eliminado, no podrás recuperar este documento.</p>
+            
+            <div class="text-end mt-3">
+                <a href="{% url 'cv_detail' cv.pk %}" class="btn btn-secondary me-2">Cancelar</a>
+                <form method="post" action="{% url 'cv_detail' cv.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_cv">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Sí, Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
