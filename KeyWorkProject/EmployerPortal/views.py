@@ -3,10 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from datetime import datetime, timedelta
-
 from .models import JobOfferDraft, CandidateMatch, EmployerMessage
 from UserManagement.models import EmployerProfile, JobSeekerProfile
 from JobSeekerPortal.models import JobOffer, JobApplication, Notification
+from utils.openai_utils import get_embedding, calculate_similarity
+from django.db.models import F
 
 @login_required
 def employer_dashboard(request):
@@ -386,9 +387,65 @@ def ats_match_candidates(request, job_id):
         messages.error(request, 'No tiene permiso para acceder a esta oferta.')
         return redirect('employer_dashboard')
     
-    # Aquí implementaremos la lógica ATS en el futuro
-    # Por ahora, solo mostraremos un mensaje informativo
-    messages.info(request, 'La funcionalidad ATS está en desarrollo y estará disponible próximamente.')
+    # Limpiar coincidencias previas para esta oferta
+    CandidateMatch.objects.filter(job_offer=job_offer).delete()
     
-    # Por ahora, simplemente redireccionar a la vista de detalles de la oferta
+    # Preparar texto de la oferta para embedding
+    job_text = f"Título: {job_offer.title}. Descripción: {job_offer.description}. Requisitos: {job_offer.requirements}."
+    if hasattr(job_offer, 'required_skills') and job_offer.required_skills:
+        job_text += f" Habilidades requeridas: {job_offer.required_skills}."
+    
+    # Generar embedding para la oferta
+    job_embedding = get_embedding(job_text)
+    
+    if not job_embedding:
+        messages.error(request, 'No se pudo generar el análisis para esta oferta. Intente nuevamente.')
+        return redirect('view_job_offer', job_id=job_offer.id)
+    
+    # Buscar candidatos con CV
+    candidates = JobSeekerProfile.objects.filter(has_cv=True)
+    matches = []
+    
+    # Para cada candidato, calcular la puntuación de coincidencia
+    for candidate in candidates:
+        # Preparar texto del candidato
+        candidate_text = f"Título profesional: {candidate.professional_title or ''}. "
+        candidate_text += f"Habilidades: {candidate.skills or ''}. "
+        candidate_text += f"Experiencia: {candidate.years_experience or 0} años. "
+        candidate_text += f"Educación: {candidate.education or ''}. "
+        
+        if candidate.cv and candidate.cv.extracted_text:
+            candidate_text += f"CV: {candidate.cv.extracted_text}"
+        
+        # Generar embedding para el candidato
+        candidate_embedding = get_embedding(candidate_text)
+        
+        if candidate_embedding:
+            # Calcular similitud
+            similarity_score = calculate_similarity(job_embedding, candidate_embedding)
+            
+            # Convertir a porcentaje
+            match_score = round(similarity_score * 100)
+            
+            # Guardar match si la puntuación es mayor a 30%
+            if match_score > 30:
+                match = CandidateMatch.objects.create(
+                    job_offer=job_offer,
+                    job_seeker=candidate,
+                    match_score=match_score,
+                    contacted=False
+                )
+                matches.append(match)
+    
+    if matches:
+        messages.success(
+            request, 
+            f'Análisis completado. Se encontraron {len(matches)} candidatos potenciales.'
+        )
+    else:
+        messages.info(
+            request, 
+            'No se encontraron candidatos que coincidan con los requisitos. Intente ampliar los criterios.'
+        )
+    
     return redirect('view_job_offer', job_id=job_offer.id)
