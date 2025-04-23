@@ -12,7 +12,7 @@ django.setup()
 from UserManagement.models import EmployerProfile
 from JobSeekerPortal.models import JobOffer
 
-# Datos de muestra simplificados
+# Datos de muestra s
 JOB_TITLES = [
     "Desarrollador Web Frontend", "Desarrollador Web Backend", "Desarrollador Full Stack",
     "Ingeniero de Software", "Analista de Datos", "Diseñador UX/UI", "Gerente de Proyectos"
