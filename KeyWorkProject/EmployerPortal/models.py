@@ -4,7 +4,6 @@ from UserManagement.models import EmployerProfile, JobSeekerProfile
 from JobSeekerPortal.models import JobOffer, JobApplication
 
 class JobOfferDraft(models.Model):
-    """Modelo para borradores de ofertas de trabajo"""
     employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     company = models.CharField(max_length=200)
@@ -27,7 +26,7 @@ class JobOfferDraft(models.Model):
         return f"Borrador: {self.title} - {self.company}"
     
     def publish(self):
-        """Publica este borrador como una oferta de trabajo"""
+        
         from datetime import datetime, timedelta
         
         # Crear la oferta de trabajo
@@ -63,7 +62,6 @@ class CandidateMatch(models.Model):
         ordering = ['-match_score']
 
 class EmployerMessage(models.Model):
-    """Modelo para mensajes de empleadores a candidatos"""
     sender = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE)
     recipient = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE)
     related_job = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
@@ -75,7 +73,7 @@ class EmployerMessage(models.Model):
         return f"Mensaje de {self.sender.user.username} a {self.recipient.user.username} sobre {self.related_job.title}"
     
     def create_notification(self):
-        """Crea una notificación para el candidato"""
+        
         from JobSeekerPortal.models import Notification
         
         notification = Notification.objects.create(
