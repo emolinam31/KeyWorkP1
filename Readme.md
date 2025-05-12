@@ -36,16 +36,19 @@ venv\Scripts\activate
 En macOS/Linux:
 source venv/bin/activate
 ## 2. Instalar dependencias
-Instale las dependencias necesarias para el proyecto:
-pip install django==5.1.6
-pip install reportlab
-pip install pdf2image
-pip install PyPDF2
-pip install pytesseract
-pip install Pillow
-pip install openai
-pip install python-dotenv
-pip install numpy
+### Opcion 1
+Instale las dependencias necesarias para el proyecto con el comando pip install -r requirements.txt (dentro de la carpeta KeyWorkProject)
+### Opcion 2
+Intale a mano cada una de estas librerias
+reportlab==4.4.0
+pdf2image==1.17.0
+PyPDF2==3.0.1
+pytesseract==0.3.13
+Pillow==11.1.0
+openai==1.78.0
+python-dotenv==1.0.1
+numpy==2.2.3
+
 ## 3. Configurar OpenAI API
 Cree un archivo .env en la raíz del proyecto (mismo nivel que manage.py) con su clave API de OpenAI:
 OPENAI_API_KEY=su_clave_api_aqui
