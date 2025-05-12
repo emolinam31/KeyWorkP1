@@ -49,4 +49,4 @@ def calculate_similarity(embedding1, embedding2):
     if norm1 == 0 or norm2 == 0:
         return 0
     
-    return dot_product / (norm1 * norm2)
+    return dot_product /(norm1 * norm2)
