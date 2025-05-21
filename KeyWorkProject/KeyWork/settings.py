@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure--v)g42=4&6@9&+7p*cg)6^k#cko+tmzf*xrjm2sod7!6r-cak2
 DEBUG = True
 
 # Configura ALLOWED_HOSTS para desarrollo y producción
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['44.208.161.17']
 
 # Application definition
 INSTALLED_APPS = [
